@@ -4,12 +4,14 @@ import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { ChatMessageItem } from '../models/models';
 import { SIGNALR_CHAT_HUB_URL } from '../config/api.config';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SignalrChatService {
   private platformId = inject(PLATFORM_ID);
+  private auth = inject(AuthService);
   private hubConnection: signalR.HubConnection | null = null;
 
   public isConnected$ = new BehaviorSubject<boolean>(false);
@@ -132,14 +134,15 @@ export class SignalrChatService {
       }
     }
 
-    // Local fallback loopback so UI reacts instantly
+    // Local fallback loopback so UI reacts instantly when SignalR is offline
+    const currentUser = this.auth.currentUser();
     const simulated: ChatMessageItem = {
       id: 'local-' + Date.now(),
       conversationId,
-      senderId: 'alex-id',
-      senderUsername,
-      senderDisplayName: 'Alex Chen',
-      senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      senderId: currentUser?.id ?? '',
+      senderUsername: senderUsername,
+      senderDisplayName: currentUser?.displayName ?? senderUsername,
+      senderAvatar: currentUser?.avatarUrl ?? '',
       content,
       codeSnippet,
       codeLanguage,

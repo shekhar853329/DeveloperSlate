@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { UserSummary } from '../models/models';
 import { environment } from '../../../environments/environment';
+import { API_BASE_URL } from '../config/api.config';
 
 export interface AuthResponse {
   token: string;
@@ -18,7 +19,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
-  private readonly baseUrl = 'http://localhost:5073/api/auth';
+  private readonly baseUrl = `${API_BASE_URL}/auth`;
 
   public currentUser = signal<UserSummary | null>(null);
   public authToken = signal<string | null>(null);
@@ -32,9 +33,7 @@ export class AuthService {
       if (storedToken && storedUser) {
         try {
           this.authToken.set(storedToken);
-          const parsed = JSON.parse(storedUser);
-          if (!parsed.roles || !parsed.roles.length || parsed.username === 'alexchen') { parsed.roles = ['Admin']; localStorage.setItem('devslate-auth-user', JSON.stringify(parsed)); }
-          this.currentUser.set(parsed);
+          this.currentUser.set(JSON.parse(storedUser));
         } catch {
           this.logout();
         }
