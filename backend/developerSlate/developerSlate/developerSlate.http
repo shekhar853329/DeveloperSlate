@@ -1,0 +1,6 @@
+@developerSlate_HostAddress = http://localhost:5073
+
+GET {{developerSlate_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

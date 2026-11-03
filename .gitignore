@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/backend/developerSlate/.vs/developerSlate.slnx
+/backend/developerSlate/developerSlate/obj
+/backend/developerSlate/developerSlate/bin/Debug/net10.0
