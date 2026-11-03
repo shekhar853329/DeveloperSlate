@@ -20,7 +20,7 @@ import {
 })
 export class ApiService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api';
+  private readonly baseUrl = 'http://localhost:5073/api';
 
   // Questions
   getQuestions(tag?: string, sort?: string, search?: string): Observable<QuestionItem[]> {

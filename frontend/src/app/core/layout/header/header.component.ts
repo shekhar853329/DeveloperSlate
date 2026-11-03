@@ -6,6 +6,7 @@ import { ThemeToggleComponent } from '../../../shared/components/theme-toggle.co
 import { UserAvatarComponent } from '../../../shared/components/common-badges.component';
 import { SignalrChatService } from '../../services/signalr-chat.service';
 import { AuthService } from '../../services/auth.service';
+import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-header',
@@ -61,6 +62,40 @@ import { AuthService } from '../../services/auth.service';
               <span>Chat</span>
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </a>
+
+            <!-- Admin Dropdown Menu -->
+            <div
+              *ngIf="permissionService.isAdmin() || permissionService.canRead('roles-management')"
+              class="relative group"
+            >
+              <button
+                type="button"
+                class="px-3 py-1.5 rounded text-cyan-600 dark:text-cyan-400 hover:bg-slate-100 dark:hover:bg-[#182234] transition-colors flex items-center gap-1 font-semibold cursor-pointer"
+              >
+                <span class="material-symbols-outlined text-[17px]">shield</span>
+                <span>Admin</span>
+                <span class="material-symbols-outlined text-[14px] group-hover:rotate-180 transition-transform">expand_more</span>
+              </button>
+
+              <div class="absolute left-0 top-full mt-1 w-48 rounded-xl border border-slate-200 dark:border-[#1e293b] bg-white dark:bg-[#111827] shadow-xl py-1.5 hidden group-hover:block z-50">
+                <a
+                  routerLink="/admin/roles"
+                  routerLinkActive="text-cyan-500 font-bold bg-cyan-500/10"
+                  class="flex items-center gap-2 px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1a2333] transition-colors"
+                >
+                  <span class="material-symbols-outlined text-[16px] text-cyan-500">admin_panel_settings</span>
+                  <span>Role Permissions</span>
+                </a>
+                <a
+                  routerLink="/admin/users"
+                  routerLinkActive="text-cyan-500 font-bold bg-cyan-500/10"
+                  class="flex items-center gap-2 px-3.5 py-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1a2333] transition-colors"
+                >
+                  <span class="material-symbols-outlined text-[16px] text-cyan-500">manage_accounts</span>
+                  <span>Assign User Roles</span>
+                </a>
+              </div>
+            </div>
           </nav>
         </div>
 
@@ -82,7 +117,7 @@ import { AuthService } from '../../services/auth.service';
         </div>
 
         <!-- Right Action Controls -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5">
           <!-- Real-Time SignalR Status Indicator -->
           <div
             class="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded text-[11px] font-mono border"
@@ -111,6 +146,17 @@ import { AuthService } from '../../services/auth.service';
           >
             <span class="material-symbols-outlined text-[16px]">edit_square</span>
             <span>Publish</span>
+          </a>
+
+          <!-- Quick Admin Action Badge (Always visible for Admin) -->
+          <a
+            *ngIf="permissionService.isAdmin() || permissionService.canRead('roles-management')"
+            routerLink="/admin/roles"
+            class="flex items-center gap-1 px-2.5 py-1.5 rounded text-xs font-mono font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 shadow-sm transition-all"
+            title="Security & RBAC Administration"
+          >
+            <span class="material-symbols-outlined text-[16px]">shield</span>
+            <span class="hidden sm:inline">ADMIN</span>
           </a>
 
           <!-- User Profile / Auth State -->
@@ -162,6 +208,7 @@ import { AuthService } from '../../services/auth.service';
 export class HeaderComponent {
   public signalrService = inject(SignalrChatService);
   public authService = inject(AuthService);
+  public permissionService = inject(PermissionService);
   private router = inject(Router);
 
   public searchQuery = '';

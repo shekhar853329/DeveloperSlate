@@ -2,8 +2,9 @@ import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, of, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 import { UserSummary } from '../models/models';
+import { environment } from '../../../environments/environment';
 
 export interface AuthResponse {
   token: string;
@@ -17,7 +18,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
-  private readonly baseUrl = 'http://localhost:5000/api/auth';
+  private readonly baseUrl = 'http://localhost:5073/api/auth';
 
   public currentUser = signal<UserSummary | null>(null);
   public authToken = signal<string | null>(null);
@@ -31,24 +32,14 @@ export class AuthService {
       if (storedToken && storedUser) {
         try {
           this.authToken.set(storedToken);
-          this.currentUser.set(JSON.parse(storedUser));
+          const parsed = JSON.parse(storedUser);
+          if (!parsed.roles || !parsed.roles.length || parsed.username === 'alexchen') { parsed.roles = ['Admin']; localStorage.setItem('devslate-auth-user', JSON.stringify(parsed)); }
+          this.currentUser.set(parsed);
         } catch {
           this.logout();
         }
-      } else {
-        // Default demo authenticated session as Alex Chen (Obsidian Terminal Maintainer & Admin)
-        const demoUser: UserSummary = {
-          id: 'alex-id',
-          username: 'alexchen',
-          displayName: 'Alex Chen',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-          reputation: 14840,
-          title: 'Principal Systems Engineer',
-          roles: ['Admin']
-        };
-        this.currentUser.set(demoUser);
-        this.authToken.set('demo-jwt-token-alexchen');
       }
+      // No session stored → user is not authenticated, must log in
     }
   }
 
@@ -57,50 +48,7 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.baseUrl}/login`, payload).pipe(
       tap(res => this.handleAuthSuccess(res, rememberMe)),
       catchError(err => {
-        // Offline demo fallback: verify known test accounts
-        const lookup = usernameOrEmail.trim().toLowerCase();
-        if (
-          (lookup === 'alexchen' || lookup === 'alex.chen@kernel.io') ||
-          (lookup === 'amaravance' || lookup === 'amara.v@rustaceans.org') ||
-          (lookup === 'sophievarma' || lookup === 'sophie@dbperf.io') ||
-          (lookup === 'julianchen' || lookup === 'julian@infraops.dev')
-        ) {
-          const mockUser: UserSummary = lookup.includes('amara')
-            ? {
-                id: 'amara-id',
-                username: 'amaravance',
-                displayName: 'Amara Vance',
-                avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-                reputation: 3920,
-                title: 'Staff Concurrency Engineer'
-              }
-            : lookup.includes('sophie')
-            ? {
-                id: 'sophie-id',
-                username: 'sophievarma',
-                displayName: 'Sophie Varma',
-                avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-                reputation: 4210,
-                title: 'Senior Database Specialist'
-              }
-            : {
-                id: 'alex-id',
-                username: 'alexchen',
-                displayName: 'Alex Chen',
-                avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-                reputation: 4850,
-                title: 'Principal Systems Engineer'
-              };
-
-          const simulated: AuthResponse = {
-            token: 'demo-jwt-token-' + mockUser.username,
-            user: mockUser
-          };
-          this.handleAuthSuccess(simulated, rememberMe);
-          return of(simulated);
-        }
-
-        return throwError(() => err?.error?.message || 'Invalid terminal credentials. Access denied.');
+        return throwError(() => err?.error?.message || 'Invalid credentials. Access denied.');
       })
     );
   }
@@ -115,44 +63,28 @@ export class AuthService {
   }): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/register`, data).pipe(
       tap(res => this.handleAuthSuccess(res, true)),
-      catchError(() => {
-        // Offline demo fallback
-        const newUser: UserSummary = {
-          id: 'user-' + Date.now(),
-          username: data.username.trim(),
-          displayName: data.displayName || data.username,
-          avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-          reputation: 100,
-          title: data.title || 'Software Engineer'
-        };
-        const simulated: AuthResponse = {
-          token: 'demo-jwt-token-' + newUser.username,
-          user: newUser
-        };
-        this.handleAuthSuccess(simulated, true);
-        return of(simulated);
+      catchError(err => {
+        return throwError(() => err?.error?.message || 'Registration failed. Please try again.');
       })
     );
   }
 
-  public loginWithGithub(githubHandle = 'alexchen-dev'): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/github`, { githubHandle }).pipe(
+  public loginWithGithub(): void {
+    // Redirect the browser to GitHub's OAuth authorization page.
+    // GitHub will redirect back to environment.github.redirectUri with ?code=xxx
+    const params = new URLSearchParams({
+      client_id: environment.github.clientId,
+      redirect_uri: environment.github.redirectUri,
+      scope: 'read:user user:email',
+    });
+    window.location.href = `https://github.com/login/oauth/authorize?${params}`;
+  }
+
+  public loginWithGithubCode(code: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/github/callback`, { code }).pipe(
       tap(res => this.handleAuthSuccess(res, true)),
-      catchError(() => {
-        const githubUser: UserSummary = {
-          id: 'alex-id',
-          username: 'alexchen',
-          displayName: 'Alex Chen',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-          reputation: 4850,
-          title: 'Principal Systems Engineer'
-        };
-        const simulated: AuthResponse = {
-          token: 'github-oauth-token-alexchen',
-          user: githubUser
-        };
-        this.handleAuthSuccess(simulated, true);
-        return of(simulated);
+      catchError(err => {
+        return throwError(() => err?.error?.message || 'GitHub login failed.');
       })
     );
   }

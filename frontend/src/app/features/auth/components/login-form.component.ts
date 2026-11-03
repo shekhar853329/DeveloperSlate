@@ -191,11 +191,12 @@ export class LoginFormCardComponent {
   @Input() errorMessage = '';
   @Output() onSubmit = new EventEmitter<any>();
   @Output() githubAuth = new EventEmitter<void>();
+  @Output() clearError = new EventEmitter<void>();
 
   isRegisterMode = false;
   showPassword = false;
-  usernameOrEmail = 'alexchen';
-  password = 'Password123!';
+  usernameOrEmail = '';
+  password = '';
   displayName = '';
   email = '';
   title = '';
@@ -203,13 +204,7 @@ export class LoginFormCardComponent {
 
   setMode(register: boolean): void {
     this.isRegisterMode = register;
-    this.errorMessage = '';
-  }
-
-  fillCredentials(username: string, pass: string): void {
-    this.usernameOrEmail = username;
-    this.password = pass;
-    this.isRegisterMode = false;
+    this.clearError.emit(); // tell parent to clear the error, don't mutate input locally
   }
 
   submit(): void {

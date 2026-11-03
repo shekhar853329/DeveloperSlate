@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ShellComponent } from './core/layout/shell/shell.component';
 import { LoginPageComponent } from './features/auth/pages/login-page.component';
+import { GithubCallbackPageComponent } from './features/auth/pages/github-callback-page.component';
 import { QuestionsPageComponent } from './features/questions/pages/questions-page.component';
 import { QuestionDetailPageComponent } from './features/questions/pages/question-detail-page.component';
 import { BlogsPageComponent, BlogDetailPageComponent } from './features/blogs/pages/blogs-pages.component';
@@ -17,6 +18,7 @@ import { permissionGuard } from './core/guards/permission.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginPageComponent },
+  { path: 'auth/callback', component: GithubCallbackPageComponent },
   {
     path: '',
     component: ShellComponent,

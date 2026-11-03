@@ -1,16 +1,15 @@
-import { Component, ViewChild, inject } from '@angular/core';
+import { Component, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { ThemeToggleComponent } from '../../../shared/components/theme-toggle.component';
 import { LoginFormCardComponent } from '../components/login-form.component';
-import { QuickDemoLoginComponent } from '../components/quick-demo-login.component';
 
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, ThemeToggleComponent, LoginFormCardComponent, QuickDemoLoginComponent],
+  imports: [CommonModule, RouterModule, ThemeToggleComponent, LoginFormCardComponent],
   template: `
     <div class="min-h-screen flex flex-col justify-between bg-[#f8fafc] dark:bg-[#0b0f17] text-[#0f172a] dark:text-[#dfe2ee] font-sans antialiased p-4 sm:p-6 lg:p-8">
       
@@ -55,16 +54,12 @@ import { QuickDemoLoginComponent } from '../components/quick-demo-login.componen
           <!-- Form Component -->
           <app-login-form
             #loginForm
-            [isLoading]="isLoading"
-            [errorMessage]="errorMessage"
+            [isLoading]="isLoading()"
+            [errorMessage]="errorMessage()"
             (onSubmit)="handleAuthSubmit($event)"
             (githubAuth)="handleGithubAuth()"
+            (clearError)="errorMessage.set('')"
           ></app-login-form>
-
-          <!-- Quick Demo Logins -->
-          <app-quick-demo-login
-            (onSelect)="loginForm.fillCredentials($event.username, $event.pass)"
-          ></app-quick-demo-login>
         </div>
 
         <!-- Telemetry Security Status -->
@@ -91,12 +86,12 @@ export class LoginPageComponent {
   private router = inject(Router);
   public themeService = inject(ThemeService);
 
-  isLoading = false;
-  errorMessage = '';
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal('');
 
   handleAuthSubmit(event: any): void {
-    this.isLoading = true;
-    this.errorMessage = '';
+    this.isLoading.set(true);
+    this.errorMessage.set('');
 
     if (event.isRegister) {
       this.authService.register({
@@ -107,41 +102,30 @@ export class LoginPageComponent {
         title: event.title
       }).subscribe({
         next: () => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.router.navigate(['/questions']);
         },
         error: (err) => {
-          this.isLoading = false;
-          this.errorMessage = typeof err === 'string' ? err : 'Registration failed. Try a different username.';
+          this.isLoading.set(false);
+          this.errorMessage.set(typeof err === 'string' ? err : (err?.error?.message || 'Registration failed. Try a different username.'));
         }
       });
     } else {
       this.authService.login(event.usernameOrEmail, event.password, event.rememberMe).subscribe({
         next: () => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.router.navigate(['/questions']);
         },
         error: (err) => {
-          this.isLoading = false;
-          this.errorMessage = typeof err === 'string' ? err : 'Authentication failed. Check your password.';
+          this.isLoading.set(false);
+          this.errorMessage.set(typeof err === 'string' ? err : (err?.error?.message || 'Authentication failed. Check your password.'));
         }
       });
     }
   }
 
   handleGithubAuth(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.authService.loginWithGithub('alexchen-dev').subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.router.navigate(['/questions']);
-      },
-      error: () => {
-        this.isLoading = false;
-        this.errorMessage = 'GitHub authentication failed.';
-      }
-    });
+    this.authService.loginWithGithub();
   }
 }
 

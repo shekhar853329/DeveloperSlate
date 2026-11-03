@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import * as signalR from '@microsoft/signalr';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { ChatMessageItem } from '../models/models';
+import { SIGNALR_CHAT_HUB_URL } from '../config/api.config';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +26,7 @@ export class SignalrChatService {
   private initConnection(): void {
     try {
       this.hubConnection = new signalR.HubConnectionBuilder()
-        .withUrl('http://localhost:5000/hubs/chat', {
+        .withUrl(SIGNALR_CHAT_HUB_URL, {
           skipNegotiation: false,
           transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
         })

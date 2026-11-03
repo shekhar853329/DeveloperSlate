@@ -8,7 +8,7 @@ import { RoleItem, ScreenDefinition, UserWithRolesItem } from '../models/models'
 })
 export class AdminApiService {
   private http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:5000/api';
+  private readonly baseUrl = 'http://localhost:5073/api';
 
   // Roles & Security Administration
   getRoles(): Observable<RoleItem[]> {

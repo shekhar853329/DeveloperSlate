@@ -87,6 +87,21 @@ public static class DbInitializer
                 ALTER TABLE ""UserProficiencies"" ADD COLUMN IF NOT EXISTS ""LevelTitle"" text DEFAULT '';
                 ALTER TABLE ""UserProficiencies"" ADD COLUMN IF NOT EXISTS ""Description"" text DEFAULT '';
                 ALTER TABLE ""UserProficiencies"" ADD COLUMN IF NOT EXISTS ""ReputationBonus"" text DEFAULT '';
+
+                -- OAuth / security columns added in auth rework
+                ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""GithubId"" bigint NULL;
+
+                CREATE TABLE IF NOT EXISTS ""RefreshTokens"" (
+                    ""Id"" uuid NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+                    ""UserId"" uuid NOT NULL,
+                    ""Token"" text NOT NULL,
+                    ""ExpiresAt"" timestamp with time zone NOT NULL,
+                    ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    ""RevokedAt"" timestamp with time zone NULL,
+                    CONSTRAINT ""FK_RefreshTokens_Users_UserId"" FOREIGN KEY (""UserId"") REFERENCES ""Users"" (""Id"") ON DELETE CASCADE
+                );
+
+                CREATE UNIQUE INDEX IF NOT EXISTS ""IX_RefreshTokens_Token"" ON ""RefreshTokens"" (""Token"");
             ");
         }
         catch (Exception ex)

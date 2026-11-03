@@ -1,0 +1,22 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": "BLOCKER-1",
+      "file": "appsettings.json",
+      "location": "Jwt.Key",
+      "description": "Static JWT signing key placeholder committed to source control. The literal value 'REPLACE_WITH_A_SECRET_KEY_AT_LEAST_32_CHARS_LONG_abc123xyz' is the HMAC-SHA256 signing key read at startup (Program.cs). Any deployment that does not override it allows an attacker with repo access to forge arbitrary JWT tokens and bypass all [Authorize] endpoints.",
+      "consequence": "Complete authentication bypass in any environment where Jwt__Key is not overridden via environment variable or secrets manager.",
+      "correction": "Remove the key value from appsettings.json. Provide it via appsettings.Development.json (git-ignored), dotnet user-secrets, an environment variable (Jwt__Key), or a secrets manager. The existing ?? throw guard in Program.cs is correct and should remain."
+    },
+    {
+      "id": "BLOCKER-2",
+      "file": "appsettings.json",
+      "location": "ConnectionStrings.DefaultConnection",
+      "description": "Live Postgres password committed to source control ('Password=Subh@9899'). Anyone with repo read access obtains the database credential.",
+      "consequence": "Unauthorized database access if the same password is used on a shared or production Postgres instance.",
+      "correction": "Move the connection string to appsettings.Development.json (git-ignored), dotnet user-secrets, or the ConnectionStrings__DefaultConnection environment variable. Leave only a placeholder in the committed appsettings.json."
+    }
+  ],
+  "reviewDoc": "c:\\Users\\shekh\\source\\repos\\DeveloperSlate\\.agents\\tasks\\auth-security\\review.md"
+}
