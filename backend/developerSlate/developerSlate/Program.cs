@@ -104,8 +104,12 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
-        context.Database.Migrate();        
+        var config  = services.GetRequiredService<IConfiguration>();
+        context.Database.Migrate();
         logger.LogInformation("Database migration successfully.");
+
+        await DbSeeder.SeedAsync(context, config, logger);
+        logger.LogInformation("Database seeding completed.");
     }
     catch (Exception ex)
     {
