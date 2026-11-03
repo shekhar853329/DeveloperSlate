@@ -72,13 +72,21 @@ public static class AppScreens
     /// When the role(s) have no permissions seeded in the DB, falls back to role-name defaults
     /// so users aren't locked out by missing seed data.
     /// </summary>
+    /// <param name="userRoles">The user's role assignments (with Role.Permissions eagerly loaded).</param>
+    /// <param name="resolvedRoles">
+    ///   Optional pre-resolved role names (e.g. including a "Developer" fallback added by the caller).
+    ///   When supplied these are used instead of re-deriving the list from <paramref name="userRoles"/>,
+    ///   keeping the roles list and the permission map consistent.
+    /// </param>
     public static Dictionary<string, (bool CanRead, bool CanWrite)> BuildPermissionMap(
-        IEnumerable<UserRole> userRoles)
+        IEnumerable<UserRole> userRoles,
+        IEnumerable<string>? resolvedRoles = null)
     {
-        var roleList = userRoles
-            .Where(ur => ur.Role != null)
-            .Select(ur => ur.Role!.Name)
-            .ToList();
+        var roleList = resolvedRoles?.ToList()
+            ?? userRoles
+                .Where(ur => ur.Role != null)
+                .Select(ur => ur.Role!.Name)
+                .ToList();
 
         bool isAdmin      = roleList.Contains("Admin") || roleList.Contains("System Architect");
         bool isMaintainer = roleList.Contains("Maintainer");

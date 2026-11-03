@@ -23,9 +23,11 @@ export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot) =>
     return true;
   }
 
-  // Access Denied: redirect to default safe screen
+  // Access Denied: redirect to a dedicated, unguarded access-denied page.
+  // DO NOT redirect to '/questions' — that route is also guarded and causes
+  // an infinite navigation loop when the user lacks read access to 'questions'.
   console.warn(`[AccessControl] Access denied for screen: ${screenKey}. User roles:`, permissionService.userRoles());
-  router.navigate(['/questions'], { queryParams: { error: 'access_denied', screen: screenKey } });
+  router.navigate(['/access-denied'], { queryParams: { screen: screenKey } });
   return false;
 };
 

@@ -14,11 +14,15 @@ import { ProfilePageComponent } from './features/profile/pages/profile-page.comp
 import { ChatPageComponent } from './features/chat/pages/chat-page.component';
 import { RolesPageComponent } from './features/admin/pages/roles-page.component';
 import { UsersPageComponent } from './features/admin/pages/users-page.component';
+import { AccessDeniedPageComponent } from './features/auth/pages/access-denied-page.component';
 import { permissionGuard } from './core/guards/permission.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginPageComponent },
   { path: 'auth/callback', component: GithubCallbackPageComponent },
+  // Unguarded — must NOT have canActivate, otherwise the permission guard's
+  // fallback redirect creates an infinite navigation loop.
+  { path: 'access-denied', component: AccessDeniedPageComponent },
   {
     path: '',
     component: ShellComponent,

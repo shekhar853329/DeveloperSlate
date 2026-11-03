@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using developerSlate.Data;
@@ -7,6 +8,7 @@ namespace developerSlate.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class RolesController : ControllerBase
 {
     private readonly AppDbContext _context;

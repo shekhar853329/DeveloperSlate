@@ -465,7 +465,9 @@ public class AuthController : ControllerBase
         if (roles.Count == 0)
             roles.Add("Developer");
 
-        var permMap = AppScreens.BuildPermissionMap(user.UserRoles);
+        // Pass the resolved roles list (including any fallback) into BuildPermissionMap
+        // so the permission map and the roles list are always consistent.
+        var permMap = AppScreens.BuildPermissionMap(user.UserRoles, roles);
         var permissionsMap = permMap.ToDictionary(
             kv => kv.Key,
             kv => (object)new { canRead = kv.Value.CanRead, canWrite = kv.Value.CanWrite });
