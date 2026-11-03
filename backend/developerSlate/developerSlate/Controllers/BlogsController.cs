@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using developerSlate.Data;
 using developerSlate.Models.Domain;
 
@@ -10,10 +14,12 @@ namespace developerSlate.Controllers;
 public class BlogsController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IConfiguration _config;
 
-    public BlogsController(AppDbContext context)
+    public BlogsController(AppDbContext context, IConfiguration config)
     {
         _context = context;
+        _config = config;
     }
 
     [HttpGet]
@@ -93,10 +99,20 @@ public class BlogsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> PublishBlog([FromBody] CreateBlogDto dto)
     {
-        var author = await _context.Users.FirstOrDefaultAsync() 
-                     ?? throw new InvalidOperationException("No user found");
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { message = "Invalid token." });
+
+        var author = await _context.Users.FindAsync(userId);
+        if (author == null) return Unauthorized(new { message = "User not found." });
+
+        var defaultCover = _config["Blog:DefaultCoverImageUrl"]
+            ?? "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&auto=format&fit=crop&q=80";
 
         var blog = new BlogPost
         {
@@ -105,7 +121,7 @@ public class BlogsController : ControllerBase
             Subtitle = dto.Subtitle ?? "",
             Excerpt = dto.Excerpt ?? (dto.ContentMarkdown.Length > 160 ? dto.ContentMarkdown.Substring(0, 160) + "..." : dto.ContentMarkdown),
             ContentMarkdown = dto.ContentMarkdown,
-            CoverImageUrl = dto.CoverImageUrl ?? "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&auto=format&fit=crop&q=80",
+            CoverImageUrl = dto.CoverImageUrl ?? defaultCover,
             ReadingTimeMinutes = Math.Max(1, dto.ContentMarkdown.Split(' ').Length / 180),
             AuthorId = author.Id,
             Tags = dto.Tags ?? new List<string> { "Architecture" },

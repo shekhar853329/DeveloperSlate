@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using developerSlate.Data;
 using developerSlate.Models.Domain;
 
@@ -141,8 +145,8 @@ public class ProfileController : ControllerBase
         return Ok(new
         {
             totalContributions = totalEvents,
-            longestStreak = 38,
-            currentStreak = 14,
+            longestStreak = 0,
+            currentStreak = 0,
             peakHours = user?.PeakActivityHours ?? "21:00 - 03:00 UTC",
             days = contributions
         });
@@ -227,12 +231,17 @@ public class ChatController : ControllerBase
     }
 
     [HttpPost("conversations/{id:guid}/messages")]
+    [Authorize]
     public async Task<IActionResult> SendMessage(Guid id, [FromBody] SendMessageDto dto)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == dto.SenderUsername)
-                   ?? await _context.Users.FirstOrDefaultAsync();
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
-        if (user == null) return BadRequest("Sender not found");
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { message = "Invalid token." });
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null) return Unauthorized(new { message = "User not found." });
 
         var msg = new ChatMessage
         {
@@ -273,7 +282,6 @@ public class ChatController : ControllerBase
 
 public class SendMessageDto
 {
-    public string SenderUsername { get; set; } = "alexchen";
     public string Content { get; set; } = string.Empty;
     public string? CodeSnippet { get; set; }
     public string? CodeLanguage { get; set; }

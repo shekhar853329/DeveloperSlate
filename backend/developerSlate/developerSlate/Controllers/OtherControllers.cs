@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using developerSlate.Data;
 using developerSlate.Models.Domain;
 
@@ -65,12 +69,16 @@ public class NotebookController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetSnippets([FromQuery] string? category, [FromQuery] string? search)
     {
-        var user = await _context.Users.FirstOrDefaultAsync();
-        if (user == null) return Ok(new List<object>());
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
-        var query = _context.SavedSnippets.Where(s => s.UserId == user.Id).AsQueryable();
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { message = "Invalid token." });
+
+        var query = _context.SavedSnippets.Where(s => s.UserId == userId).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(category) && category != "All")
         {
@@ -105,10 +113,17 @@ public class NotebookController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> SaveSnippet([FromBody] CreateSnippetDto dto)
     {
-        var user = await _context.Users.FirstOrDefaultAsync() 
-                   ?? throw new InvalidOperationException("No user found");
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { message = "Invalid token." });
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null) return Unauthorized(new { message = "User not found." });
 
         var snippet = new SavedSnippet
         {

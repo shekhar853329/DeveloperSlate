@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using developerSlate.Data;
 using developerSlate.Models.Domain;
 
@@ -158,10 +162,17 @@ public class QuestionsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> CreateQuestion([FromBody] CreateQuestionDto dto)
     {
-        var author = await _context.Users.FirstOrDefaultAsync() 
-                     ?? throw new InvalidOperationException("No user found");
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { message = "Invalid token." });
+
+        var author = await _context.Users.FindAsync(userId);
+        if (author == null) return Unauthorized(new { message = "User not found." });
 
         var q = new Question
         {
@@ -204,13 +215,20 @@ public class QuestionsController : ControllerBase
     }
 
     [HttpPost("{id:guid}/answers")]
+    [Authorize]
     public async Task<IActionResult> PostAnswer(Guid id, [FromBody] PostAnswerDto dto)
     {
         var q = await _context.Questions.FindAsync(id);
         if (q == null) return NotFound();
 
-        var author = await _context.Users.FirstOrDefaultAsync() 
-                     ?? throw new InvalidOperationException("No user found");
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { message = "Invalid token." });
+
+        var author = await _context.Users.FindAsync(userId);
+        if (author == null) return Unauthorized(new { message = "User not found." });
 
         var ans = new Answer
         {

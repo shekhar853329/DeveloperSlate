@@ -96,14 +96,14 @@ public class AuthController : ControllerBase
             Email = email,
             PasswordHash = hash,
             PasswordSalt = salt,
-            Title = string.IsNullOrWhiteSpace(dto.Title) ? "Software Engineer" : dto.Title.Trim(),
-            Bio = "Newly registered contributor exploring high-performance systems and concurrent architectures.",
-            AvatarUrl = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+            Title = string.IsNullOrWhiteSpace(dto.Title) ? (_config["Registration:DefaultTitle"] ?? "Software Engineer") : dto.Title.Trim(),
+            Bio = _config["Registration:DefaultBio"] ?? "Newly registered contributor.",
+            AvatarUrl = _config["Registration:DefaultAvatarUrl"] ?? "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
             GithubHandle = string.IsNullOrWhiteSpace(dto.GithubHandle) ? dto.Username.Trim() : dto.GithubHandle.Trim(),
-            Reputation = 100,
+            Reputation = _config.GetValue<int>("Registration:DefaultReputation", 100),
             SolvedCount = 0,
             QuestionCount = 0,
-            ImpactScore = 100,
+            ImpactScore = _config.GetValue<int>("Registration:DefaultImpactScore", 100),
             IsOnline = true,
             CreatedAt = DateTime.UtcNow,
             LastActiveAt = DateTime.UtcNow
@@ -115,11 +115,11 @@ public class AuthController : ControllerBase
         _context.UserProficiencies.Add(new UserProficiency
         {
             UserId = newUser.Id,
-            Technology = "Rust / TypeScript Fundamentals",
-            Score = 75,
-            Tier = "Contributor",
+            Technology = _config["Registration:DefaultProficiency:Technology"] ?? "Rust / TypeScript Fundamentals",
+            Score = _config.GetValue<int>("Registration:DefaultProficiency:Score", 75),
+            Tier = _config["Registration:DefaultProficiency:Tier"] ?? "Contributor",
             VerifiedSolutionsCount = 0,
-            Icon = "code"
+            Icon = _config["Registration:DefaultProficiency:Icon"] ?? "code"
         });
 
         var devRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Developer");
