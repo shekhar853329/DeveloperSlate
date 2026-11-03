@@ -14,7 +14,7 @@ public class BlogPost
     public string CoverImageUrl { get; set; } = string.Empty;
     public Guid AuthorId { get; set; }
     public User? Author { get; set; }
-    public int ReadingTimeMinutes { get; set; } = 8;
+    public int ReadingTimeMinutes { get; set; } = 0;
     public int ClapsCount { get; set; } = 0;
     public int BookmarkCount { get; set; } = 0;
     public bool IsFeatured { get; set; } = false;
@@ -32,8 +32,8 @@ public class SavedSnippet
     public Guid UserId { get; set; }
     public User? User { get; set; }
     public string Title { get; set; } = string.Empty;
-    public string Category { get; set; } = "Concurrency";
-    public string Language { get; set; } = "rust";
+    public string Category { get; set; } = string.Empty;
+    public string Language { get; set; } = string.Empty;
     public string CodeContent { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
     public bool IsPinned { get; set; } = false;
@@ -54,7 +54,7 @@ public class CodeDiff
     public int Deletions { get; set; } = 0;
     public string OriginalCode { get; set; } = string.Empty;
     public string ModifiedCode { get; set; } = string.Empty;
-    public string Language { get; set; } = "rust";
+    public string Language { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
@@ -63,7 +63,7 @@ public class AstComparison
     public Guid Id { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public string Language { get; set; } = "typescript";
+    public string Language { get; set; } = string.Empty;
     public string SourceCode { get; set; } = string.Empty;
     public string TargetCode { get; set; } = string.Empty;
     public string AstJson { get; set; } = string.Empty;

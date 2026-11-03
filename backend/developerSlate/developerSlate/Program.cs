@@ -10,27 +10,13 @@ using developerSlate.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database Configuration (PostgreSQL with resilient fallback)
+// 1. Database Configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+    throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    var useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDb");
-    if (useInMemory || string.IsNullOrEmpty(connectionString))
-    {
-        options.UseInMemoryDatabase("DeveloperSlateDb");
-    }
-    else
-    {
-        try
-        {
-            options.UseNpgsql(connectionString);
-        }
-        catch
-        {
-            options.UseInMemoryDatabase("DeveloperSlateDb");
-        }
-    }
-});
+    options.UseNpgsql(connectionString));
 
 // 2. JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured.");
@@ -110,19 +96,21 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// 8. Seed Database
+// 8. Apply migrations and seed database
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
-        DbInitializer.Initialize(context);
+        context.Database.Migrate();        
+        logger.LogInformation("Database migration successfully.");
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database. Falling back to InMemory if PostgreSQL is unavailable.");
+        logger.LogError(ex, "An error occurred during database migration or seeding.");
+        throw;
     }
 }
 

@@ -30,17 +30,7 @@ public class ProfileController : ControllerBase
             .Include(u => u.BlogPosts)
             .FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
 
-        if (user == null)
-        {
-            user = await _context.Users
-                .Include(u => u.Proficiencies)
-                .Include(u => u.PeerEndorsements)
-                .Include(u => u.VerifiedSolutions)
-                .Include(u => u.BlogPosts)
-                .FirstOrDefaultAsync();
-        }
-
-        if (user == null) return NotFound();
+        if (user == null) return NotFound(new { message = "User not found." });
 
         return Ok(new
         {
@@ -122,11 +112,12 @@ public class ProfileController : ControllerBase
     [HttpGet("{username}/contributions")]
     public async Task<IActionResult> GetContributions(string username)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower())
-                   ?? await _context.Users.FirstOrDefaultAsync();
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
 
-        var totalEvents = user?.TotalContributionEvents ?? 1420;
-        var random = new Random(user?.Id.GetHashCode() ?? 42);
+        if (user == null) return NotFound(new { message = "User not found." });
+
+        var totalEvents = user.TotalContributionEvents;
+        var random = new Random(user.Id.GetHashCode());
         var contributions = new List<object>();
         var now = DateTime.UtcNow.Date;
 
@@ -147,7 +138,7 @@ public class ProfileController : ControllerBase
             totalContributions = totalEvents,
             longestStreak = 0,
             currentStreak = 0,
-            peakHours = user?.PeakActivityHours ?? "21:00 - 03:00 UTC",
+            peakHours = user.PeakActivityHours,
             days = contributions
         });
     }
