@@ -465,20 +465,10 @@ public class AuthController : ControllerBase
         if (roles.Count == 0)
             roles.Add("Developer");
 
-        var permissionsMap = new Dictionary<string, object>();
-        foreach (var screen in AppScreens.All)
-        {
-            bool canRead = user.UserRoles.Any(ur => ur.Role != null && ur.Role.Permissions.Any(p => p.ScreenKey == screen.Key && p.CanRead));
-            bool canWrite = user.UserRoles.Any(ur => ur.Role != null && ur.Role.Permissions.Any(p => p.ScreenKey == screen.Key && p.CanWrite));
-
-            if (!canRead && roles.Contains("Admin"))
-            {
-                canRead = true;
-                canWrite = true;
-            }
-
-            permissionsMap[screen.Key] = new { canRead, canWrite };
-        }
+        var permMap = AppScreens.BuildPermissionMap(user.UserRoles);
+        var permissionsMap = permMap.ToDictionary(
+            kv => kv.Key,
+            kv => (object)new { canRead = kv.Value.CanRead, canWrite = kv.Value.CanWrite });
 
         return new
         {

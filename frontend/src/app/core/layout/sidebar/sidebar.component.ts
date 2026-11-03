@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PermissionService } from '../../services/permission.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -117,7 +118,7 @@ import { PermissionService } from '../../services/permission.service';
 
           <a
             *ngIf="permissionService.canRead('profile')"
-            routerLink="/profile"
+            [routerLink]="['/profile', authService.currentUser()?.username]"
             routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
             class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
           >
@@ -176,4 +177,5 @@ import { PermissionService } from '../../services/permission.service';
 })
 export class SidebarComponent {
   public permissionService = inject(PermissionService);
+  public authService = inject(AuthService);
 }

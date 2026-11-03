@@ -15,7 +15,10 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
                              req.url.includes('/api/auth/register') ||
                              req.url.includes('/api/auth/refresh');
 
-      if (!isAuthEndpoint) {
+      // Profile endpoints handle their own 404s gracefully in the component
+      const isProfileEndpoint = req.url.includes('/api/profile/');
+
+      if (!isAuthEndpoint && !isProfileEndpoint) {
         switch (error.status) {
           case 0:
             toast.error('Cannot reach the server. Check your connection.');

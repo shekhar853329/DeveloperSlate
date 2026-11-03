@@ -163,7 +163,7 @@ import { PermissionService } from '../../services/permission.service';
           <ng-container *ngIf="authService.currentUser() as user; else loginButton">
             <div class="flex items-center gap-2">
               <a
-                routerLink="/profile"
+                [routerLink]="['/profile', user.username]"
                 class="flex items-center gap-2 pl-1 pr-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-[#182234] border border-transparent hover:border-slate-200 dark:hover:border-[#1e293b] transition-all"
               >
                 <app-user-avatar

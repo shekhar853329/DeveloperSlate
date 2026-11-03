@@ -57,13 +57,10 @@ public class UsersController : ControllerBase
                 .ToList();
 
             // Compute effective screen permissions aggregated across all roles
-            var permissionsMap = new Dictionary<string, object>();
-            foreach (var screen in AppScreens.All)
-            {
-                bool canRead = u.UserRoles.Any(ur => ur.Role != null && ur.Role.Permissions.Any(p => p.ScreenKey == screen.Key && p.CanRead));
-                bool canWrite = u.UserRoles.Any(ur => ur.Role != null && ur.Role.Permissions.Any(p => p.ScreenKey == screen.Key && p.CanWrite));
-                permissionsMap[screen.Key] = new { canRead, canWrite };
-            }
+            var permMap = AppScreens.BuildPermissionMap(u.UserRoles);
+            var permissionsMap = permMap.ToDictionary(
+                kv => kv.Key,
+                kv => (object)new { canRead = kv.Value.CanRead, canWrite = kv.Value.CanWrite });
 
             return new
             {
@@ -110,13 +107,10 @@ public class UsersController : ControllerBase
             })
             .ToList();
 
-        var permissionsMap = new Dictionary<string, object>();
-        foreach (var screen in AppScreens.All)
-        {
-            bool canRead = user.UserRoles.Any(ur => ur.Role != null && ur.Role.Permissions.Any(p => p.ScreenKey == screen.Key && p.CanRead));
-            bool canWrite = user.UserRoles.Any(ur => ur.Role != null && ur.Role.Permissions.Any(p => p.ScreenKey == screen.Key && p.CanWrite));
-            permissionsMap[screen.Key] = new { canRead, canWrite };
-        }
+        var permMap2 = AppScreens.BuildPermissionMap(user.UserRoles);
+        var permissionsMap = permMap2.ToDictionary(
+            kv => kv.Key,
+            kv => (object)new { canRead = kv.Value.CanRead, canWrite = kv.Value.CanWrite });
 
         return Ok(new
         {
@@ -188,13 +182,10 @@ public class UsersController : ControllerBase
             })
             .ToList();
 
-        var permissionsMap = new Dictionary<string, object>();
-        foreach (var screen in AppScreens.All)
-        {
-            bool canRead = updatedUser.UserRoles.Any(ur => ur.Role != null && ur.Role.Permissions.Any(p => p.ScreenKey == screen.Key && p.CanRead));
-            bool canWrite = updatedUser.UserRoles.Any(ur => ur.Role != null && ur.Role.Permissions.Any(p => p.ScreenKey == screen.Key && p.CanWrite));
-            permissionsMap[screen.Key] = new { canRead, canWrite };
-        }
+        var permMap3 = AppScreens.BuildPermissionMap(updatedUser.UserRoles);
+        var permissionsMap = permMap3.ToDictionary(
+            kv => kv.Key,
+            kv => (object)new { canRead = kv.Value.CanRead, canWrite = kv.Value.CanWrite });
 
         return Ok(new
         {

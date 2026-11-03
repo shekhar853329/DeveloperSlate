@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { ProfileDetail } from '../../../core/models/models';
 import {
@@ -40,7 +41,12 @@ import {
         <div class="h-64 rounded-xl bg-slate-200 dark:bg-[#111827]"></div>
       </div>
 
-      <!-- Loaded Profile -->
+      <!-- Error / Not Found -->
+      <div *ngIf="!isLoading() && !profile()" class="p-12 text-center rounded-xl border border-dashed border-slate-200 dark:border-[#1e293b] bg-slate-50 dark:bg-[#111827]">
+        <span class="material-symbols-outlined text-4xl text-slate-400 mb-2 block">person_off</span>
+        <h3 class="text-base font-semibold text-slate-700 dark:text-slate-300">Profile not found</h3>
+        <p class="text-xs text-slate-500 mt-1 font-mono">This developer profile doesn't exist yet or hasn't been indexed.</p>
+      </div>
       <div *ngIf="!isLoading() && profile()" class="transition-opacity duration-300">
         <!-- 1. Developer Metadata Header -->
         <app-profile-header [profile]="profile()!"></app-profile-header>
@@ -102,6 +108,7 @@ import {
 })
 export class ProfilePageComponent implements OnInit {
   private apiService = inject(ApiService);
+  private authService = inject(AuthService);
   private route = inject(ActivatedRoute);
   public themeService = inject(ThemeService);
 
@@ -112,7 +119,14 @@ export class ProfilePageComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(p => {
-      const username = p['username'] || 'alexchen';
+      // Fall back to the currently logged-in user's username, not a hardcoded one
+      const username = p['username'] || this.authService.currentUser()?.username || '';
+
+      if (!username) {
+        this.isLoading.set(false);
+        return;
+      }
+
       this.isLoading.set(true);
 
       this.apiService.getProfile(username).subscribe({
@@ -128,6 +142,10 @@ export class ProfilePageComponent implements OnInit {
       this.apiService.getContributions(username).subscribe({
         next: (contribs) => {
           this.contributions.set(contribs);
+        },
+        error: () => {
+          // Contributions are non-critical — show an empty matrix rather than crashing
+          this.contributions.set({ days: [], totalContributions: 0, longestStreak: 0, currentStreak: 0, peakHours: '' });
         }
       });
     });

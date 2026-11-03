@@ -57,5 +57,79 @@ public static class AppScreens
         ("roles-management", "Roles & Screen Permissions", "Administration", "Configure security roles and assign read/write privileges per screen"),
         ("users-management", "User Roles Assignment", "Administration", "Manage registered developers and assign system access roles")
     };
+
+    private static readonly HashSet<string> AdminOnlyScreens = new(StringComparer.OrdinalIgnoreCase)
+        { "roles-management", "users-management" };
+
+    private static readonly HashSet<string> ViewerReadScreens = new(StringComparer.OrdinalIgnoreCase)
+        { "questions", "blogs", "tags", "diff", "ast", "profile" };
+
+    private static readonly HashSet<string> DeveloperWriteScreens = new(StringComparer.OrdinalIgnoreCase)
+        { "questions", "studio", "notebook", "chat", "profile" };
+
+    /// <summary>
+    /// Builds a permission map for <paramref name="userRoles"/> across all known screens.
+    /// When the role(s) have no permissions seeded in the DB, falls back to role-name defaults
+    /// so users aren't locked out by missing seed data.
+    /// </summary>
+    public static Dictionary<string, (bool CanRead, bool CanWrite)> BuildPermissionMap(
+        IEnumerable<UserRole> userRoles)
+    {
+        var roleList = userRoles
+            .Where(ur => ur.Role != null)
+            .Select(ur => ur.Role!.Name)
+            .ToList();
+
+        bool isAdmin      = roleList.Contains("Admin") || roleList.Contains("System Architect");
+        bool isMaintainer = roleList.Contains("Maintainer");
+        bool isDeveloper  = roleList.Contains("Developer");
+        bool isViewer     = roleList.Contains("Viewer");
+
+        bool hasAnySeedPermission = userRoles.Any(ur =>
+            ur.Role != null && ur.Role.Permissions.Any(p => p.CanRead));
+
+        var map = new Dictionary<string, (bool CanRead, bool CanWrite)>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var screen in All)
+        {
+            bool canRead, canWrite;
+
+            if (isAdmin)
+            {
+                canRead  = true;
+                canWrite = true;
+            }
+            else if (hasAnySeedPermission)
+            {
+                // Role has been explicitly configured in the DB — trust it
+                canRead  = userRoles.Any(ur => ur.Role != null && ur.Role.Permissions.Any(p => p.ScreenKey == screen.Key && p.CanRead));
+                canWrite = userRoles.Any(ur => ur.Role != null && ur.Role.Permissions.Any(p => p.ScreenKey == screen.Key && p.CanWrite));
+            }
+            else if (isMaintainer)
+            {
+                canRead  = true;
+                canWrite = !AdminOnlyScreens.Contains(screen.Key);
+            }
+            else if (isDeveloper)
+            {
+                canRead  = !AdminOnlyScreens.Contains(screen.Key);
+                canWrite = DeveloperWriteScreens.Contains(screen.Key);
+            }
+            else if (isViewer)
+            {
+                canRead  = ViewerReadScreens.Contains(screen.Key);
+                canWrite = false;
+            }
+            else
+            {
+                canRead  = false;
+                canWrite = false;
+            }
+
+            map[screen.Key] = (canRead, canWrite);
+        }
+
+        return map;
+    }
 }
 

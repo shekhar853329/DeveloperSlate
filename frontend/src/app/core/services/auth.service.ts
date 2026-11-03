@@ -9,6 +9,7 @@ import { API_BASE_URL } from '../config/api.config';
 
 export interface AuthResponse {
   token: string;
+  refreshToken: string;
   user: UserSummary;
 }
 
@@ -23,16 +24,19 @@ export class AuthService {
 
   public currentUser = signal<UserSummary | null>(null);
   public authToken = signal<string | null>(null);
+  public refreshToken = signal<string | null>(null);
   public isAuthenticated = computed(() => !!this.currentUser());
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
       const storedToken = localStorage.getItem('devslate-auth-token');
+      const storedRefresh = localStorage.getItem('devslate-refresh-token');
       const storedUser = localStorage.getItem('devslate-auth-user');
 
       if (storedToken && storedUser) {
         try {
           this.authToken.set(storedToken);
+          this.refreshToken.set(storedRefresh);
           this.currentUser.set(JSON.parse(storedUser));
         } catch {
           this.logout();
@@ -98,8 +102,10 @@ export class AuthService {
   public logout(): void {
     this.currentUser.set(null);
     this.authToken.set(null);
+    this.refreshToken.set(null);
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('devslate-auth-token');
+      localStorage.removeItem('devslate-refresh-token');
       localStorage.removeItem('devslate-auth-user');
     }
     this.router.navigate(['/login']);
@@ -108,9 +114,11 @@ export class AuthService {
   private handleAuthSuccess(res: AuthResponse, rememberMe: boolean): void {
     this.currentUser.set(res.user);
     this.authToken.set(res.token);
+    this.refreshToken.set(res.refreshToken);
 
     if (isPlatformBrowser(this.platformId) && rememberMe) {
       localStorage.setItem('devslate-auth-token', res.token);
+      localStorage.setItem('devslate-refresh-token', res.refreshToken);
       localStorage.setItem('devslate-auth-user', JSON.stringify(res.user));
     }
   }
