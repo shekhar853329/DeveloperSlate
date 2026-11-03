@@ -11,6 +11,9 @@ import { DiffPageComponent } from './features/diff-viewer/pages/diff-page.compon
 import { AstPageComponent } from './features/ast-visualizer/pages/ast-page.component';
 import { ProfilePageComponent } from './features/profile/pages/profile-page.component';
 import { ChatPageComponent } from './features/chat/pages/chat-page.component';
+import { RolesPageComponent } from './features/admin/pages/roles-page.component';
+import { UsersPageComponent } from './features/admin/pages/users-page.component';
+import { permissionGuard } from './core/guards/permission.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginPageComponent },
@@ -19,18 +22,90 @@ export const routes: Routes = [
     component: ShellComponent,
     children: [
       { path: '', redirectTo: 'questions', pathMatch: 'full' },
-      { path: 'questions', component: QuestionsPageComponent },
-      { path: 'questions/:id', component: QuestionDetailPageComponent },
-      { path: 'blogs', component: BlogsPageComponent },
-      { path: 'blogs/:slug', component: BlogDetailPageComponent },
-      { path: 'studio', component: StudioPageComponent },
-      { path: 'tags', component: TagsPageComponent },
-      { path: 'notebook', component: NotebookPageComponent },
-      { path: 'diff', component: DiffPageComponent },
-      { path: 'ast', component: AstPageComponent },
-      { path: 'profile', component: ProfilePageComponent },
-      { path: 'profile/:username', component: ProfilePageComponent },
-      { path: 'chat', component: ChatPageComponent }
+      {
+        path: 'questions',
+        component: QuestionsPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'questions' }
+      },
+      {
+        path: 'questions/:id',
+        component: QuestionDetailPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'questions' }
+      },
+      {
+        path: 'blogs',
+        component: BlogsPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'blogs' }
+      },
+      {
+        path: 'blogs/:slug',
+        component: BlogDetailPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'blogs' }
+      },
+      {
+        path: 'studio',
+        component: StudioPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'studio' }
+      },
+      {
+        path: 'tags',
+        component: TagsPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'tags' }
+      },
+      {
+        path: 'notebook',
+        component: NotebookPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'notebook' }
+      },
+      {
+        path: 'diff',
+        component: DiffPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'diff' }
+      },
+      {
+        path: 'ast',
+        component: AstPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'ast' }
+      },
+      {
+        path: 'profile',
+        component: ProfilePageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'profile' }
+      },
+      {
+        path: 'profile/:username',
+        component: ProfilePageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'profile' }
+      },
+      {
+        path: 'chat',
+        component: ChatPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'chat' }
+      },
+      {
+        path: 'admin/roles',
+        component: RolesPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'roles-management' }
+      },
+      {
+        path: 'admin/users',
+        component: UsersPageComponent,
+        canActivate: [permissionGuard],
+        data: { screenKey: 'users-management' }
+      }
     ]
   },
   { path: '**', redirectTo: 'questions' }

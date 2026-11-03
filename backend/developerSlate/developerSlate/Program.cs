@@ -1,7 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using developerSlate.Data;
 using developerSlate.Hubs;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,13 +32,58 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     }
 });
 
-// 2. SignalR Real-time communication
+// 2. JWT Authentication
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is not configured.");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "DeveloperSlate";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "DeveloperSlate";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+// 3. Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("AuthPolicy", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 10;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
+// 4. HttpClient for GitHub OAuth
+builder.Services.AddHttpClient("GitHub", client =>
+{
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Add("User-Agent", "DeveloperSlate");
+});
+
+// 5. SignalR Real-time communication
 builder.Services.AddSignalR(options =>
 {
     options.EnableDetailedErrors = true;
 });
 
-// 3. CORS Policy for Angular Frontend
+// 6. CORS Policy for Angular Frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
@@ -45,7 +95,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 4. Controllers with JSON options
+// 7. Controllers with JSON options
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -57,7 +107,7 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// 5. Seed Database
+// 8. Seed Database
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -78,11 +128,21 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseCors("FrontendPolicy");
+// 9. Security Headers Middleware
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    await next();
+});
 
+app.UseCors("FrontendPolicy");
+app.UseRateLimiter();
+app.UseAuthentication();
 app.UseAuthorization();
 
-// 6. Map Controllers & SignalR Hubs
+// 10. Map Controllers & SignalR Hubs
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
 app.MapHub<CommunityHub>("/hubs/community");

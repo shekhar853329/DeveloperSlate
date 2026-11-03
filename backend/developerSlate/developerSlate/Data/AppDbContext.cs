@@ -25,6 +25,10 @@ public class AppDbContext : DbContext
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
     public DbSet<PeerEndorsement> PeerEndorsements => Set<PeerEndorsement>();
     public DbSet<ProfileVerifiedSolution> ProfileVerifiedSolutions => Set<ProfileVerifiedSolution>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<RoleScreenPermission> RoleScreenPermissions => Set<RoleScreenPermission>();
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -116,6 +120,29 @@ public class AppDbContext : DbContext
             .HasForeignKey(cm => cm.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // RBAC: User <-> Role (Many-to-Many)
+        modelBuilder.Entity<UserRole>()
+            .HasKey(ur => new { ur.UserId, ur.RoleId });
+
+        modelBuilder.Entity<UserRole>()
+            .HasOne(ur => ur.User)
+            .WithMany(u => u.UserRoles)
+            .HasForeignKey(ur => ur.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserRole>()
+            .HasOne(ur => ur.Role)
+            .WithMany(r => r.UserRoles)
+            .HasForeignKey(ur => ur.RoleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Role <-> RoleScreenPermission (One-to-Many)
+        modelBuilder.Entity<RoleScreenPermission>()
+            .HasOne(rsp => rsp.Role)
+            .WithMany(r => r.Permissions)
+            .HasForeignKey(rsp => rsp.RoleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Indexes for Postgres performance
         modelBuilder.Entity<Question>()
             .HasIndex(q => q.CreatedAt);
@@ -126,6 +153,17 @@ public class AppDbContext : DbContext
             .IsUnique();
         modelBuilder.Entity<BlogPost>()
             .HasIndex(b => b.Slug)
+            .IsUnique();
+
+        // RefreshToken relationships
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(rt => rt.User)
+            .WithMany(u => u.RefreshTokens)
+            .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(rt => rt.Token)
             .IsUnique();
     }
 }

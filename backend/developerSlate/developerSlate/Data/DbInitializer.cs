@@ -41,6 +41,35 @@ public static class DbInitializer
                     CONSTRAINT ""FK_ProfileVerifiedSolutions_Users_UserId"" FOREIGN KEY (""UserId"") REFERENCES ""Users"" (""Id"") ON DELETE CASCADE
                 );
 
+                CREATE TABLE IF NOT EXISTS ""Roles"" (
+                    ""Id"" uuid NOT NULL PRIMARY KEY,
+                    ""Name"" text NOT NULL,
+                    ""Description"" text NOT NULL DEFAULT '',
+                    ""IsSystemRole"" boolean NOT NULL DEFAULT FALSE,
+                    ""CreatedAt"" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS ""RoleScreenPermissions"" (
+                    ""Id"" uuid NOT NULL PRIMARY KEY,
+                    ""RoleId"" uuid NOT NULL,
+                    ""ScreenKey"" text NOT NULL,
+                    ""ScreenName"" text NOT NULL,
+                    ""ScreenCategory"" text NOT NULL,
+                    ""Description"" text NOT NULL DEFAULT '',
+                    ""CanRead"" boolean NOT NULL DEFAULT TRUE,
+                    ""CanWrite"" boolean NOT NULL DEFAULT FALSE,
+                    CONSTRAINT ""FK_RoleScreenPermissions_Roles_RoleId"" FOREIGN KEY (""RoleId"") REFERENCES ""Roles"" (""Id"") ON DELETE CASCADE
+                );
+
+                CREATE TABLE IF NOT EXISTS ""UserRoles"" (
+                    ""UserId"" uuid NOT NULL,
+                    ""RoleId"" uuid NOT NULL,
+                    ""AssignedAt"" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT ""PK_UserRoles"" PRIMARY KEY (""UserId"", ""RoleId""),
+                    CONSTRAINT ""FK_UserRoles_Users_UserId"" FOREIGN KEY (""UserId"") REFERENCES ""Users"" (""Id"") ON DELETE CASCADE,
+                    CONSTRAINT ""FK_UserRoles_Roles_RoleId"" FOREIGN KEY (""RoleId"") REFERENCES ""Roles"" (""Id"") ON DELETE CASCADE
+                );
+
                 ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""PasswordHash"" text DEFAULT '';
                 ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""PasswordSalt"" text DEFAULT '';
                 ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""MonthlyReputationDelta"" integer DEFAULT 412;
@@ -294,6 +323,8 @@ impl<T> ZeroCopyBuffer<T> {
                 }
                 context.SaveChanges();
             }
+
+            SeedRolesAndPermissions(context);
             return; // DB has been seeded
         }
 
@@ -760,6 +791,144 @@ ON tenant_events USING gin (tenant_id, ((payload->>'service_name')) gin_trgm_ops
             }
         );
 
+        context.SaveChanges();
+
+        SeedRolesAndPermissions(context);
+    }
+
+    private static void SeedRolesAndPermissions(AppDbContext context)
+    {
+        // 1. Roles
+        var adminRole = context.Roles.Include(r => r.Permissions).FirstOrDefault(r => r.Name == "Admin");
+        if (adminRole == null)
+        {
+            adminRole = new Role
+            {
+                Name = "Admin",
+                Description = "Full administrative access with unrestricted read and write privileges across all platform screens and security configurations.",
+                IsSystemRole = true
+            };
+            context.Roles.Add(adminRole);
+            context.SaveChanges();
+        }
+
+        var maintainerRole = context.Roles.Include(r => r.Permissions).FirstOrDefault(r => r.Name == "Maintainer");
+        if (maintainerRole == null)
+        {
+            maintainerRole = new Role
+            {
+                Name = "Maintainer",
+                Description = "Platform core maintainer with authoring and moderation capabilities across feeds, blogs, studio, and chat. Read-only on admin panels.",
+                IsSystemRole = false
+            };
+            context.Roles.Add(maintainerRole);
+            context.SaveChanges();
+        }
+
+        var devRole = context.Roles.Include(r => r.Permissions).FirstOrDefault(r => r.Name == "Developer");
+        if (devRole == null)
+        {
+            devRole = new Role
+            {
+                Name = "Developer",
+                Description = "Standard authenticated engineer with full participation in discussions, studio, snippets, chat, and profile. Read-only on published articles.",
+                IsSystemRole = false
+            };
+            context.Roles.Add(devRole);
+            context.SaveChanges();
+        }
+
+        var viewerRole = context.Roles.Include(r => r.Permissions).FirstOrDefault(r => r.Name == "Viewer");
+        if (viewerRole == null)
+        {
+            viewerRole = new Role
+            {
+                Name = "Viewer",
+                Description = "Read-only access for observing problems, articles, tags, diffs, and developer profiles without write or interaction privileges.",
+                IsSystemRole = false
+            };
+            context.Roles.Add(viewerRole);
+            context.SaveChanges();
+        }
+
+        // 2. Screen Permissions for each role
+        SyncRolePermissions(context, adminRole, canReadDefault: true, canWriteDefault: true);
+        SyncRolePermissions(context, maintainerRole, (screenKey) =>
+        {
+            if (screenKey is "roles-management" or "users-management")
+                return (canRead: true, canWrite: false);
+            return (canRead: true, canWrite: true);
+        });
+        SyncRolePermissions(context, devRole, (screenKey) =>
+        {
+            if (screenKey is "roles-management" or "users-management")
+                return (canRead: false, canWrite: false);
+            if (screenKey is "blogs" or "diff" or "ast" or "tags")
+                return (canRead: true, canWrite: false);
+            return (canRead: true, canWrite: true); // questions, studio, notebook, chat, profile
+        });
+        SyncRolePermissions(context, viewerRole, (screenKey) =>
+        {
+            if (screenKey is "roles-management" or "users-management" or "studio" or "notebook" or "chat" or "blogs-write")
+                return (canRead: false, canWrite: false);
+            return (canRead: true, canWrite: false);
+        });
+
+        // 3. User Role Assignments
+        var alex = context.Users.FirstOrDefault(u => u.Username.ToLower() == "alexchen");
+        if (alex != null && !context.UserRoles.Any(ur => ur.UserId == alex.Id))
+        {
+            context.UserRoles.Add(new UserRole { UserId = alex.Id, RoleId = adminRole.Id });
+        }
+
+        var sophie = context.Users.FirstOrDefault(u => u.Username.ToLower() == "sophievarma");
+        if (sophie != null && !context.UserRoles.Any(ur => ur.UserId == sophie.Id))
+        {
+            context.UserRoles.Add(new UserRole { UserId = sophie.Id, RoleId = maintainerRole.Id });
+        }
+
+        var amara = context.Users.FirstOrDefault(u => u.Username.ToLower() == "amaravance");
+        if (amara != null && !context.UserRoles.Any(ur => ur.UserId == amara.Id))
+        {
+            context.UserRoles.Add(new UserRole { UserId = amara.Id, RoleId = devRole.Id });
+        }
+
+        var julian = context.Users.FirstOrDefault(u => u.Username.ToLower() == "julianchen");
+        if (julian != null && !context.UserRoles.Any(ur => ur.UserId == julian.Id))
+        {
+            context.UserRoles.Add(new UserRole { UserId = julian.Id, RoleId = devRole.Id });
+        }
+
+        context.SaveChanges();
+    }
+
+    private static void SyncRolePermissions(AppDbContext context, Role role, bool canReadDefault, bool canWriteDefault)
+    {
+        SyncRolePermissions(context, role, _ => (canReadDefault, canWriteDefault));
+    }
+
+    private static void SyncRolePermissions(AppDbContext context, Role role, Func<string, (bool canRead, bool canWrite)> rule)
+    {
+        var existingPermissions = context.RoleScreenPermissions.Where(p => p.RoleId == role.Id).ToList();
+        var existingKeys = existingPermissions.Select(p => p.ScreenKey).ToHashSet();
+
+        foreach (var screen in AppScreens.All)
+        {
+            if (!existingKeys.Contains(screen.Key))
+            {
+                var (canRead, canWrite) = rule(screen.Key);
+                context.RoleScreenPermissions.Add(new RoleScreenPermission
+                {
+                    RoleId = role.Id,
+                    ScreenKey = screen.Key,
+                    ScreenName = screen.Name,
+                    ScreenCategory = screen.Category,
+                    Description = screen.Description,
+                    CanRead = canRead,
+                    CanWrite = canWrite
+                });
+            }
+        }
         context.SaveChanges();
     }
 }

@@ -1,3 +1,8 @@
+export interface ScreenPermissionStatus {
+  canRead: boolean;
+  canWrite: boolean;
+}
+
 export interface UserSummary {
   id: string;
   username: string;
@@ -5,8 +10,11 @@ export interface UserSummary {
   avatarUrl: string;
   reputation: number;
   title?: string;
+  email?: string;
   bio?: string;
   isOnline?: boolean;
+  roles?: string[];
+  permissions?: Record<string, ScreenPermissionStatus>;
 }
 
 export interface TagSummary {
@@ -199,5 +207,57 @@ export interface ChatConversationItem {
     isRead: boolean;
   };
   participants: UserSummary[];
+}
+
+export interface ScreenDefinition {
+  key: string;
+  name: string;
+  category: string;
+  description: string;
+}
+
+export interface RoleScreenPermissionItem {
+  id?: string;
+  screenKey: string;
+  screenName: string;
+  screenCategory: string;
+  description?: string;
+  canRead: boolean;
+  canWrite: boolean;
+}
+
+export interface RoleItem {
+  id: string;
+  name: string;
+  description: string;
+  isSystemRole: boolean;
+  createdAt?: string;
+  userCount: number;
+  permissions: RoleScreenPermissionItem[];
+}
+
+export interface UserRoleAssignment {
+  id: string;
+  name: string;
+  isSystemRole?: boolean;
+  assignedAt?: string;
+}
+
+export interface UserWithRolesItem {
+  id: string;
+  username: string;
+  displayName: string;
+  email: string;
+  avatarUrl: string;
+  title: string;
+  reputation: number;
+  solvedCount: number;
+  githubHandle?: string;
+  location?: string;
+  isOnline: boolean;
+  lastActiveAt?: string;
+  createdAt: string;
+  roles: UserRoleAssignment[];
+  effectivePermissions?: Record<string, ScreenPermissionStatus>;
 }
 

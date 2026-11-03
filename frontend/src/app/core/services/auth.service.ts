@@ -36,14 +36,15 @@ export class AuthService {
           this.logout();
         }
       } else {
-        // Default demo authenticated session as Alex Chen (Obsidian Terminal Maintainer)
+        // Default demo authenticated session as Alex Chen (Obsidian Terminal Maintainer & Admin)
         const demoUser: UserSummary = {
           id: 'alex-id',
           username: 'alexchen',
           displayName: 'Alex Chen',
           avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-          reputation: 4850,
-          title: 'Principal Systems Engineer'
+          reputation: 14840,
+          title: 'Principal Systems Engineer',
+          roles: ['Admin']
         };
         this.currentUser.set(demoUser);
         this.authToken.set('demo-jwt-token-alexchen');
@@ -154,6 +155,13 @@ export class AuthService {
         return of(simulated);
       })
     );
+  }
+
+  public setCurrentUser(user: UserSummary): void {
+    this.currentUser.set(user);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('devslate-auth-user', JSON.stringify(user));
+    }
   }
 
   public logout(): void {

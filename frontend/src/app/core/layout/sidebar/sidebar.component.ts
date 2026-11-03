@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,6 +17,7 @@ import { RouterModule } from '@angular/router';
         </h4>
         <nav class="space-y-1">
           <a
+            *ngIf="permissionService.canRead('questions')"
             routerLink="/questions"
             routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
             class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
@@ -25,6 +27,7 @@ import { RouterModule } from '@angular/router';
           </a>
 
           <a
+            *ngIf="permissionService.canRead('blogs')"
             routerLink="/blogs"
             routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
             class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
@@ -34,6 +37,7 @@ import { RouterModule } from '@angular/router';
           </a>
 
           <a
+            *ngIf="permissionService.canRead('tags')"
             routerLink="/tags"
             routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
             class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
@@ -51,6 +55,7 @@ import { RouterModule } from '@angular/router';
         </h4>
         <nav class="space-y-1">
           <a
+            *ngIf="permissionService.canRead('studio')"
             routerLink="/studio"
             routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
             class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
@@ -60,6 +65,7 @@ import { RouterModule } from '@angular/router';
           </a>
 
           <a
+            *ngIf="permissionService.canRead('notebook')"
             routerLink="/notebook"
             routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
             class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
@@ -69,6 +75,7 @@ import { RouterModule } from '@angular/router';
           </a>
 
           <a
+            *ngIf="permissionService.canRead('diff')"
             routerLink="/diff"
             routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
             class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
@@ -78,6 +85,7 @@ import { RouterModule } from '@angular/router';
           </a>
 
           <a
+            *ngIf="permissionService.canRead('ast')"
             routerLink="/ast"
             routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
             class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
@@ -95,6 +103,7 @@ import { RouterModule } from '@angular/router';
         </h4>
         <nav class="space-y-1">
           <a
+            *ngIf="permissionService.canRead('chat')"
             routerLink="/chat"
             routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
             class="flex items-center justify-between px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
@@ -107,6 +116,7 @@ import { RouterModule } from '@angular/router';
           </a>
 
           <a
+            *ngIf="permissionService.canRead('profile')"
             routerLink="/profile"
             routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
             class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
@@ -117,23 +127,53 @@ import { RouterModule } from '@angular/router';
         </nav>
       </div>
 
+      <!-- Section 4: Security & Administration (RBAC) -->
+      <div *ngIf="permissionService.canRead('roles-management') || permissionService.canRead('users-management') || permissionService.isAdmin()" class="mb-6">
+        <h4 class="px-3 mb-2 text-[10px] font-mono uppercase tracking-wider text-cyan-500/80 font-semibold flex items-center justify-between">
+          <span>Security & RBAC</span>
+          <span class="material-symbols-outlined text-[14px]">shield</span>
+        </h4>
+        <nav class="space-y-1">
+          <a
+            *ngIf="permissionService.canRead('roles-management') || permissionService.isAdmin()"
+            routerLink="/admin/roles"
+            routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
+            class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
+          >
+            <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+            <span>Role Permissions</span>
+          </a>
+
+          <a
+            *ngIf="permissionService.canRead('users-management') || permissionService.isAdmin()"
+            routerLink="/admin/users"
+            routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
+            class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
+          >
+            <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+            <span>Assign User Roles</span>
+          </a>
+        </nav>
+      </div>
+
       <!-- Telemetry Box -->
       <div class="p-3 mx-2 rounded border border-slate-200 dark:border-[#1e293b] bg-slate-50 dark:bg-[#0d1117] text-[11px] font-mono text-slate-500 dark:text-slate-400 space-y-1.5">
         <div class="flex items-center justify-between">
-          <span>PostgreSQL 16:</span>
-          <span class="text-emerald-500">Connected</span>
+          <span>Active Role:</span>
+          <span class="text-cyan-400 font-bold">{{ permissionService.userRoles()[0] || 'Developer' }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span>PostgreSQL RBAC:</span>
+          <span class="text-emerald-500">Enforced</span>
         </div>
         <div class="flex items-center justify-between">
           <span>SignalR Hub:</span>
           <span class="text-cyan-400">Online</span>
         </div>
-        <div class="flex items-center justify-between">
-          <span>Tokio Runtimes:</span>
-          <span class="text-slate-300">12 workers</span>
-        </div>
       </div>
     </aside>
   `
 })
-export class SidebarComponent {}
-
+export class SidebarComponent {
+  public permissionService = inject(PermissionService);
+}

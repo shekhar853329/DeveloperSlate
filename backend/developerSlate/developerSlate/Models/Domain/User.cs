@@ -16,6 +16,7 @@ public class User
     public string Title { get; set; } = "Systems Architect & Core Contributor";
     public string Location { get; set; } = "San Francisco, CA";
     public string GithubHandle { get; set; } = string.Empty;
+    public long? GithubId { get; set; }
     public int Reputation { get; set; } = 14840;
     public int MonthlyReputationDelta { get; set; } = 412;
     public double AcceptanceRate { get; set; } = 98.4;
@@ -44,5 +45,7 @@ public class User
     public ICollection<SavedSnippet> SavedSnippets { get; set; } = new List<SavedSnippet>();
     public ICollection<ChatParticipant> ChatParticipations { get; set; } = new List<ChatParticipant>();
     public ICollection<ChatMessage> SentMessages { get; set; } = new List<ChatMessage>();
+    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }
 
