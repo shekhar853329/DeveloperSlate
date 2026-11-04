@@ -7,8 +7,6 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { ProfileDetail } from '../../../core/models/models';
 import {
   ProfileHeaderComponent,
-  ProfileStatsCardsComponent,
-  ContributionMatrixComponent,
   ProficienciesComponent,
   ProfileActivityTabsComponent,
   VerifiedSolutionsFeedComponent,
@@ -22,8 +20,6 @@ import {
   imports: [
     CommonModule,
     ProfileHeaderComponent,
-    ProfileStatsCardsComponent,
-    ContributionMatrixComponent,
     ProficienciesComponent,
     ProfileActivityTabsComponent,
     VerifiedSolutionsFeedComponent,
@@ -50,17 +46,6 @@ import {
       <div *ngIf="!isLoading() && profile()" class="transition-opacity duration-300">
         <!-- 1. Developer Metadata Header -->
         <app-profile-header [profile]="profile()!"></app-profile-header>
-
-        <!-- 2. 5 Key Metric Telemetry Tiles -->
-        <app-profile-stats-cards [profile]="profile()!"></app-profile-stats-cards>
-
-        <!-- 3. Annual Contribution Matrix Heatmap -->
-        <app-contribution-matrix
-          [days]="contributions().days"
-          [totalEvents]="profile()!.totalContributionEvents"
-          [peakHours]="profile()!.peakActivityHours"
-          [isDark]="themeService.isDark()"
-        ></app-contribution-matrix>
 
         <!-- 4. Verified System Proficiencies -->
         <app-proficiencies [proficiencies]="profile()!.proficiencies"></app-proficiencies>

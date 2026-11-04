@@ -43,6 +43,44 @@ import { RoleItem, RoleScreenPermissionItem, ScreenDefinition } from '../../../c
             <span>{{ roles().length }} Roles</span>
           </div>
 
+          <!-- Loading state -->
+          <div *ngIf="isLoadingRoles()" class="flex items-center gap-2 px-2 py-4 text-xs font-mono text-slate-400">
+            <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+            Loading roles…
+          </div>
+
+          <!-- Error state -->
+          <div *ngIf="rolesLoadError()" class="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4 text-xs font-mono">
+            <div class="flex items-start gap-2 text-rose-400 mb-3">
+              <span class="material-symbols-outlined text-[16px] mt-0.5">error</span>
+              <span>{{ rolesLoadError() }}</span>
+            </div>
+            <button
+              (click)="loadRoles()"
+              class="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[11px] font-mono font-medium transition-colors flex items-center gap-1"
+            >
+              <span class="material-symbols-outlined text-[13px]">refresh</span>
+              Retry
+            </button>
+          </div>
+
+          <!-- Empty state (loaded successfully but no roles in DB) -->
+          <div *ngIf="!isLoadingRoles() && !rolesLoadError() && roles().length === 0"
+               class="rounded-xl border border-dashed border-slate-300 dark:border-[#1e293b] p-6 text-center">
+            <span class="material-symbols-outlined text-slate-400 text-[32px] mb-2 block">shield_question</span>
+            <p class="text-xs font-mono text-slate-500 dark:text-slate-400 mb-3">
+              No roles found in the database.<br>
+              Restart the backend to re-run the seeder.
+            </p>
+            <button
+              (click)="loadRoles()"
+              class="px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-500 border border-cyan-500/30 text-[11px] font-mono font-medium transition-colors flex items-center gap-1 mx-auto"
+            >
+              <span class="material-symbols-outlined text-[13px]">refresh</span>
+              Refresh
+            </button>
+          </div>
+
           <div class="space-y-2">
             <div
               *ngFor="let role of roles()"
@@ -160,7 +198,7 @@ import { RoleItem, RoleScreenPermissionItem, ScreenDefinition } from '../../../c
               <span>{{ saveSuccessMessage() }}</span>
             </div>
 
-            <!-- Screen Permission Matrix Table -->
+            <!-- Screen Permission Matrix Table -->             
             <div class="space-y-6">
               <div *ngFor="let group of groupedScreens()" class="space-y-2">
                 <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-slate-400 font-bold px-1">
@@ -209,8 +247,8 @@ import { RoleItem, RoleScreenPermissionItem, ScreenDefinition } from '../../../c
                           <label class="inline-flex items-center justify-center cursor-pointer p-1">
                             <input
                               type="checkbox"
-                              [(ngModel)]="perm.canRead"
-                              (change)="onReadToggle(perm)"
+                              [checked]="perm.canRead"
+                              (change)="onReadToggle(perm, $event)"
                               class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-cyan-600 focus:ring-cyan-500 bg-white dark:bg-[#0d1117]"
                             />
                           </label>
@@ -221,8 +259,8 @@ import { RoleItem, RoleScreenPermissionItem, ScreenDefinition } from '../../../c
                           <label class="inline-flex items-center justify-center cursor-pointer p-1">
                             <input
                               type="checkbox"
-                              [(ngModel)]="perm.canWrite"
-                              (change)="onWriteToggle(perm)"
+                              [checked]="perm.canWrite"
+                              (change)="onWriteToggle(perm, $event)"
                               class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-emerald-600 focus:ring-emerald-500 bg-white dark:bg-[#0d1117]"
                             />
                           </label>
@@ -317,6 +355,8 @@ export class RolesPageComponent implements OnInit {
   screensCatalog = signal<ScreenDefinition[]>([]);
   isSaving = signal<boolean>(false);
   saveSuccessMessage = signal<string | null>(null);
+  isLoadingRoles = signal<boolean>(false);
+  rolesLoadError = signal<string | null>(null);
 
   // Create Role Modal
   showCreateModal = signal<boolean>(false);
@@ -333,13 +373,31 @@ export class RolesPageComponent implements OnInit {
   }
 
   loadRoles(): void {
-    this.apiService.getRoles().subscribe(roles => {
-      this.roles.set(roles);
-      if (roles.length > 0 && !this.selectedRole()) {
-        this.selectedRole.set(roles[0]);
-      } else if (this.selectedRole()) {
-        const found = roles.find(r => r.id === this.selectedRole()!.id);
-        if (found) this.selectedRole.set(found);
+    this.isLoadingRoles.set(true);
+    this.rolesLoadError.set(null);
+    this.apiService.getRoles().subscribe({
+      next: roles => {
+        this.isLoadingRoles.set(false);
+        this.roles.set(roles);
+        if (roles.length > 0 && !this.selectedRole()) {
+          this.selectedRole.set(roles[0]);
+        } else if (this.selectedRole()) {
+          const found = roles.find(r => r.id === this.selectedRole()!.id);
+          if (found) this.selectedRole.set(found);
+        }
+      },
+      error: (err) => {
+        this.isLoadingRoles.set(false);
+        const status = err?.status;
+        if (status === 0) {
+          this.rolesLoadError.set('Cannot reach the backend. Make sure the API server is running.');
+        } else if (status === 401) {
+          this.rolesLoadError.set('Session expired. Please log in again.');
+        } else if (status === 403) {
+          this.rolesLoadError.set('Access denied. Admin role required.');
+        } else {
+          this.rolesLoadError.set(`Failed to load roles (HTTP ${status ?? 'unknown'}). Check the backend logs.`);
+        }
       }
     });
   }
@@ -376,14 +434,16 @@ export class RolesPageComponent implements OnInit {
     }));
   }
 
-  onReadToggle(perm: RoleScreenPermissionItem): void {
+  onReadToggle(perm: RoleScreenPermissionItem, event: Event): void {
+    perm.canRead = (event.target as HTMLInputElement).checked;
     // If read is unchecked, write must also be unchecked
     if (!perm.canRead) {
       perm.canWrite = false;
     }
   }
 
-  onWriteToggle(perm: RoleScreenPermissionItem): void {
+  onWriteToggle(perm: RoleScreenPermissionItem, event: Event): void {
+    perm.canWrite = (event.target as HTMLInputElement).checked;
     // If write is enabled, read must automatically be enabled
     if (perm.canWrite) {
       perm.canRead = true;

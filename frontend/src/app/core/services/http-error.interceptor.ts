@@ -2,11 +2,9 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { ToastService } from './toast.service';
-import { AuthService } from './auth.service';
 
 export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const toast = inject(ToastService);
-  const auth = inject(AuthService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -24,8 +22,9 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
             toast.error('Cannot reach the server. Check your connection.');
             break;
           case 401:
-            // Token expired mid-session: clear state and redirect to login
-            auth.logout();
+            // The auth-token interceptor already attempted a refresh.
+            // If we reach here, the refresh failed and the user was logged out.
+            // Nothing more to do — suppress the error display for 401.
             break;
           case 403:
             toast.error('You don\'t have permission to do that.');

@@ -2,7 +2,7 @@ import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, map } from 'rxjs';
 import { UserSummary } from '../models/models';
 import { environment } from '../../../environments/environment';
 import { API_BASE_URL } from '../config/api.config';
@@ -97,6 +97,28 @@ export class AuthService {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('devslate-auth-user', JSON.stringify(user));
     }
+  }
+
+  /**
+   * Attempts a silent token refresh using the stored refresh token.
+   * On success, updates the in-memory and localStorage tokens and returns the new access token.
+   * Called by the auth token interceptor — does NOT navigate or show toasts.
+   */
+  public refreshAccessToken(refreshToken: string): Observable<string> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/refresh`, { refreshToken }).pipe(
+      tap(res => {
+        this.authToken.set(res.token);
+        this.refreshToken.set(res.refreshToken);
+        this.currentUser.set(res.user);
+        if (isPlatformBrowser(this.platformId)) {
+          localStorage.setItem('devslate-auth-token', res.token);
+          localStorage.setItem('devslate-refresh-token', res.refreshToken);
+          localStorage.setItem('devslate-auth-user', JSON.stringify(res.user));
+        }
+      }),
+      map(res => res.token),
+      catchError(err => throwError(() => err))
+    );
   }
 
   public logout(): void {
