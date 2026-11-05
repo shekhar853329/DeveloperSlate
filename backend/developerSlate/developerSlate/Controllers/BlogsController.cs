@@ -21,7 +21,7 @@ public class BlogsController : ControllerBase
         _context = context;
         _config = config;
     }
-
+// //test
     [HttpGet]
     public async Task<IActionResult> GetBlogs([FromQuery] string? tag)
     {
