@@ -1,8 +1,8 @@
 export const environment = {
-  production: false,
-  apiBaseUrl: 'http://localhost:5073',
+  production: true,
+  apiBaseUrl: 'https://developer-slate-api.fly.dev',
   github: {
-    clientId: 'Ov23liFbol4tOcrHR6Iq', // replace with your actual GitHub OAuth App Client ID
-    redirectUri: 'http://localhost:4200/auth/callback'
+    clientId: 'Ov23liFbol4tOcrHR6Iq',
+    redirectUri: 'https://developer-slate.pages.dev/auth/callback'
   }
 };

@@ -1,0 +1,29 @@
+# fly.toml — DeveloperSlate backend
+# Generated for Fly.io deployment
+
+app = "developer-slate-api"   # change this if the name is taken on Fly
+primary_region = "sin"        # Singapore — change to your preferred region
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  ASPNETCORE_ENVIRONMENT = "Production"
+  # All secrets (JWT key, DB connection string, GitHub OAuth) are set via
+  # `fly secrets set` — do NOT put real values here.
+
+[http_service]
+  internal_port = 8080
+  force_https   = true
+  auto_stop_machines  = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type       = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "512mb"

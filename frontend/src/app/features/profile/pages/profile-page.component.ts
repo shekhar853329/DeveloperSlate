@@ -6,8 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { ProfileDetail } from '../../../core/models/models';
 import {
-  ProfileHeaderComponent,
-  ProficienciesComponent,
+  ProfileHeaderComponent,  
   ProfileActivityTabsComponent,
   VerifiedSolutionsFeedComponent,
   FeaturedRfcsComponent,
@@ -19,8 +18,7 @@ import {
   standalone: true,
   imports: [
     CommonModule,
-    ProfileHeaderComponent,
-    ProficienciesComponent,
+    ProfileHeaderComponent,    
     ProfileActivityTabsComponent,
     VerifiedSolutionsFeedComponent,
     FeaturedRfcsComponent,
@@ -45,10 +43,7 @@ import {
       </div>
       <div *ngIf="!isLoading() && profile()" class="transition-opacity duration-300">
         <!-- 1. Developer Metadata Header -->
-        <app-profile-header [profile]="profile()!"></app-profile-header>
-
-        <!-- 4. Verified System Proficiencies -->
-        <app-proficiencies [proficiencies]="profile()!.proficiencies"></app-proficiencies>
+        <app-profile-header [profile]="profile()!"></app-profile-header>        
 
         <!-- 5. Activity Filter Tabs -->
         <app-profile-activity-tabs
