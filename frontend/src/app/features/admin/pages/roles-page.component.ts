@@ -210,7 +210,7 @@ import { RoleItem, RoleScreenPermissionItem, ScreenDefinition } from '../../../c
                   <table class="w-full text-left text-xs">
                     <thead class="bg-slate-50 dark:bg-[#0d1117] border-b border-slate-200 dark:border-[#1e293b] font-mono text-[11px] text-slate-500">
                       <tr>
-                        <th class="py-2.5 px-4 font-semibold">Screen / Domain updated</th>
+                        <th class="py-2.5 px-4 font-semibold">Screen / Domain update</th>
                         <th class="py-2.5 px-4 w-32 text-center font-semibold">
                           <span class="flex items-center justify-center gap-1">
                             <span class="material-symbols-outlined text-[14px]">visibility</span>
