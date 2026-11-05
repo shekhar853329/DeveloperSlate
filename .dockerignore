@@ -1,0 +1,9 @@
+backend/developerSlate/developerSlate/bin/
+backend/developerSlate/developerSlate/obj/
+backend/developerSlate/developerSlate/.vs/
+backend/developerSlate/developerSlate/*.user
+backend/developerSlate/developerSlate/appsettings.Development.json
+frontend/node_modules/
+frontend/dist/
+.git/
+.agents/

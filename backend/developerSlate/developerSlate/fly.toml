@@ -5,7 +5,7 @@ app = "developer-slate-api"   # change this if the name is taken on Fly
 primary_region = "sin"        # Singapore — change to your preferred region
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = "backend/developerSlate/developerSlate/Dockerfile"
 
 [env]
   ASPNETCORE_ENVIRONMENT = "Production"

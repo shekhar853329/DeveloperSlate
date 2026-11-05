@@ -2,12 +2,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
+# Project lives at this path relative to the repo root (build context)
+ARG PROJECT_DIR=backend/developerSlate/developerSlate
+
 # Copy csproj and restore first (layer cache)
-COPY developerSlate.csproj .
+COPY ${PROJECT_DIR}/developerSlate.csproj .
 RUN dotnet restore developerSlate.csproj
 
 # Copy everything else and publish
-COPY . .
+COPY ${PROJECT_DIR}/. .
 RUN dotnet publish developerSlate.csproj -c Release -o /app/publish --no-restore
 
 # ── Runtime stage ─────────────────────────────────────────────────────────────
