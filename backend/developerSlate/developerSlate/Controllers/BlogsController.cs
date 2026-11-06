@@ -114,10 +114,21 @@ public class BlogsController : ControllerBase
         var defaultCover = _config["Blog:DefaultCoverImageUrl"]
             ?? "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&auto=format&fit=crop&q=80";
 
+        var baseSlug = dto.Title.ToLower().Replace(" ", "-").Replace(":", "").Replace("?", "");
+        if (string.IsNullOrWhiteSpace(baseSlug))
+            baseSlug = "post";
+
+        var slug = baseSlug;
+        int count = 1;
+        while (await _context.BlogPosts.AnyAsync(b => b.Slug == slug))
+        {
+            slug = $"{baseSlug}-{++count}";
+        }
+
         var blog = new BlogPost
         {
             Title = dto.Title,
-            Slug = dto.Title.ToLower().Replace(" ", "-").Replace(":", "").Replace("?", ""),
+            Slug = slug,
             Subtitle = dto.Subtitle ?? "",
             Excerpt = dto.Excerpt ?? (dto.ContentMarkdown.Length > 160 ? dto.ContentMarkdown.Substring(0, 160) + "..." : dto.ContentMarkdown),
             ContentMarkdown = dto.ContentMarkdown,
