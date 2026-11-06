@@ -1,8 +1,8 @@
 export const environment = {
-  production: true,
-  apiBaseUrl: 'https://developer-slate-api.fly.dev',
+  production: false,
+  apiBaseUrl: 'http://localhost:5073',
   github: {
     clientId: 'Ov23liFbol4tOcrHR6Iq',
-    redirectUri: 'https://developer-slate.pages.dev/auth/callback'
+    redirectUri: 'http://localhost:4200/auth/callback'
   }
 };
