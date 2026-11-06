@@ -92,11 +92,11 @@ public static class DbSeeder
 
         // Screen write access defaults per role (mirrors permission.service.ts defaults)
         var developerWriteScreens  = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { "questions", "studio", "notebook", "chat", "profile" };
+            { "questions", "studio", "chat", "profile" };
         var maintainerNoWriteScreens = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { "roles-management", "users-management" };
         var viewerReadScreens = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { "questions", "blogs", "tags", "diff", "ast", "profile" };
+            { "questions", "blogs", "tags", "profile" };
 
         foreach (var roleDef in standardRoles)
         {

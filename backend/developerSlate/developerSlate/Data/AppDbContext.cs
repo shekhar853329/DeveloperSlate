@@ -17,9 +17,6 @@ public class AppDbContext : DbContext
     public DbSet<QuestionTag> QuestionTags => Set<QuestionTag>();
     public DbSet<Vote> Votes => Set<Vote>();
     public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
-    public DbSet<SavedSnippet> SavedSnippets => Set<SavedSnippet>();
-    public DbSet<CodeDiff> CodeDiffs => Set<CodeDiff>();
-    public DbSet<AstComparison> AstComparisons => Set<AstComparison>();
     public DbSet<ChatConversation> ChatConversations => Set<ChatConversation>();
     public DbSet<ChatParticipant> ChatParticipants => Set<ChatParticipant>();
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();

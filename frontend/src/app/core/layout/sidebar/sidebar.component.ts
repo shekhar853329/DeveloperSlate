@@ -65,35 +65,6 @@ import { AuthService } from '../../services/auth.service';
             <span>Publishing Studio</span>
           </a>
 
-          <a
-            *ngIf="permissionService.canRead('notebook')"
-            routerLink="/notebook"
-            routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
-            class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
-          >
-            <span class="material-symbols-outlined text-[18px]">folder_special</span>
-            <span>Code Notebook Vault</span>
-          </a>
-
-          <a
-            *ngIf="permissionService.canRead('diff')"
-            routerLink="/diff"
-            routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
-            class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
-          >
-            <span class="material-symbols-outlined text-[18px]">difference</span>
-            <span>Code Diff Viewer</span>
-          </a>
-
-          <a
-            *ngIf="permissionService.canRead('ast')"
-            routerLink="/ast"
-            routerLinkActive="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-l-2 border-cyan-500 font-semibold"
-            class="flex items-center gap-2.5 px-3 py-2 rounded text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#182234] hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
-          >
-            <span class="material-symbols-outlined text-[18px]">account_tree</span>
-            <span>AST Visualizer</span>
-          </a>
         </nav>
       </div>
 

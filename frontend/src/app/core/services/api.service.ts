@@ -5,9 +5,6 @@ import {
   QuestionItem,
   BlogPostItem,
   TagSummary,
-  SavedSnippetItem,
-  CodeDiffItem,
-  AstComparisonItem,
   ProfileDetail,
   ChatConversationItem,
   ChatMessageItem,
@@ -99,39 +96,6 @@ export class ApiService {
     if (category) params = params.set('category', category);
     if (search) params = params.set('search', search);
     return this.http.get<TagSummary[]>(`${this.baseUrl}/tags`, { params });
-  }
-
-  // ── Notebook ─────────────────────────────────────────────────────────────
-
-  getSavedSnippets(category?: string, search?: string): Observable<SavedSnippetItem[]> {
-    let params = new HttpParams();
-    if (category) params = params.set('category', category);
-    if (search) params = params.set('search', search);
-    return this.http.get<SavedSnippetItem[]>(`${this.baseUrl}/notebook`, { params });
-  }
-
-  saveSnippet(snippet: Partial<SavedSnippetItem>): Observable<SavedSnippetItem> {
-    return this.http.post<SavedSnippetItem>(`${this.baseUrl}/notebook`, snippet);
-  }
-
-  deleteSnippet(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/notebook/${id}`);
-  }
-
-  // ── Diff ─────────────────────────────────────────────────────────────────
-
-  getDiffs(): Observable<CodeDiffItem[]> {
-    return this.http.get<CodeDiffItem[]>(`${this.baseUrl}/diff`);
-  }
-
-  getDiffById(id: string): Observable<CodeDiffItem> {
-    return this.http.get<CodeDiffItem>(`${this.baseUrl}/diff/${id}`);
-  }
-
-  // ── AST ──────────────────────────────────────────────────────────────────
-
-  getAstComparisons(): Observable<AstComparisonItem[]> {
-    return this.http.get<AstComparisonItem[]>(`${this.baseUrl}/ast`);
   }
 
   // ── Profile ──────────────────────────────────────────────────────────────

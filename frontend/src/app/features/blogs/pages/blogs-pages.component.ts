@@ -133,9 +133,7 @@ export class BlogsPageComponent implements OnInit {
       </div>
 
       <!-- Prose Content -->
-      <div class="prose prose-slate dark:prose-invert max-w-none text-sm lg:text-base leading-relaxed whitespace-pre-line text-slate-800 dark:text-slate-200 py-4">
-        {{ article.contentMarkdown }}
-      </div>
+      <div class="article-content max-w-none text-sm lg:text-base leading-relaxed text-slate-800 dark:text-slate-200 py-4" [innerHTML]="article.contentMarkdown"></div>
     </article>
   `
 })

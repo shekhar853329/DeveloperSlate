@@ -42,7 +42,6 @@ public class User
     public ICollection<Question> Questions { get; set; } = new List<Question>();
     public ICollection<Answer> Answers { get; set; } = new List<Answer>();
     public ICollection<BlogPost> BlogPosts { get; set; } = new List<BlogPost>();
-    public ICollection<SavedSnippet> SavedSnippets { get; set; } = new List<SavedSnippet>();
     public ICollection<ChatParticipant> ChatParticipations { get; set; } = new List<ChatParticipant>();
     public ICollection<ChatMessage> SentMessages { get; set; } = new List<ChatMessage>();
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();

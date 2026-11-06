@@ -69,44 +69,6 @@ namespace developerSlate.Data.Migrations
                     b.ToTable("Answers");
                 });
 
-            modelBuilder.Entity("developerSlate.Models.Domain.AstComparison", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AstJson")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SourceCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TargetCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AstComparisons");
-                });
-
             modelBuilder.Entity("developerSlate.Models.Domain.BlogPost", b =>
                 {
                     b.Property<Guid>("Id")
@@ -277,54 +239,6 @@ namespace developerSlate.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ChatParticipants");
-                });
-
-            modelBuilder.Entity("developerSlate.Models.Domain.CodeDiff", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Additions")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Author")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CommitHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Deletions")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ModifiedCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("OriginalCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CodeDiffs");
                 });
 
             modelBuilder.Entity("developerSlate.Models.Domain.PeerEndorsement", b =>
@@ -580,55 +494,6 @@ namespace developerSlate.Data.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("RoleScreenPermissions");
-                });
-
-            modelBuilder.Entity("developerSlate.Models.Domain.SavedSnippet", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CodeContent")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsPinned")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.PrimitiveCollection<List<string>>("Tags")
-                        .IsRequired()
-                        .HasColumnType("text[]");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SavedSnippets");
                 });
 
             modelBuilder.Entity("developerSlate.Models.Domain.Tag", b =>
@@ -1033,17 +898,6 @@ namespace developerSlate.Data.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("developerSlate.Models.Domain.SavedSnippet", b =>
-                {
-                    b.HasOne("developerSlate.Models.Domain.User", "User")
-                        .WithMany("SavedSnippets")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("developerSlate.Models.Domain.UserProficiency", b =>
                 {
                     b.HasOne("developerSlate.Models.Domain.User", "User")
@@ -1147,8 +1001,6 @@ namespace developerSlate.Data.Migrations
                     b.Navigation("Questions");
 
                     b.Navigation("RefreshTokens");
-
-                    b.Navigation("SavedSnippets");
 
                     b.Navigation("SentMessages");
 

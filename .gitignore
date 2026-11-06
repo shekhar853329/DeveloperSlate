@@ -10,3 +10,4 @@
 /backend/developerSlate/developerSlate/appsettings.Development.json
 /backend/developerSlate/developerSlate/appsettings.*.local.json
 /backend/developerSlate/.vs/ProjectEvaluation
+/backend/developerSlate/developerSlate/bin/*

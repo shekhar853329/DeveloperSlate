@@ -81,44 +81,6 @@ export interface BlogPostItem {
   tags: string[];
 }
 
-export interface SavedSnippetItem {
-  id: string;
-  title: string;
-  category: string;
-  language: string;
-  codeContent: string;
-  notes: string;
-  isPinned: boolean;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CodeDiffItem {
-  id: string;
-  title: string;
-  filePath: string;
-  commitHash: string;
-  author: string;
-  additions: number;
-  deletions: number;
-  originalCode: string;
-  modifiedCode: string;
-  language: string;
-  createdAt: string;
-}
-
-export interface AstComparisonItem {
-  id: string;
-  name: string;
-  description: string;
-  language: string;
-  sourceCode: string;
-  targetCode: string;
-  astJson: string;
-  createdAt: string;
-}
-
 export interface UserProficiencyItem {
   id: string;
   technology: string;

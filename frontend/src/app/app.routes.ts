@@ -7,9 +7,6 @@ import { QuestionDetailPageComponent } from './features/questions/pages/question
 import { BlogsPageComponent, BlogDetailPageComponent } from './features/blogs/pages/blogs-pages.component';
 import { StudioPageComponent } from './features/studio/pages/studio-page.component';
 import { TagsPageComponent } from './features/tags/pages/tags-page.component';
-import { NotebookPageComponent } from './features/notebook/pages/notebook-page.component';
-import { DiffPageComponent } from './features/diff-viewer/pages/diff-page.component';
-import { AstPageComponent } from './features/ast-visualizer/pages/ast-page.component';
 import { ProfilePageComponent } from './features/profile/pages/profile-page.component';
 import { ChatPageComponent } from './features/chat/pages/chat-page.component';
 import { RolesPageComponent } from './features/admin/pages/roles-page.component';
@@ -63,24 +60,6 @@ export const routes: Routes = [
         component: TagsPageComponent,
         canActivate: [permissionGuard],
         data: { screenKey: 'tags' }
-      },
-      {
-        path: 'notebook',
-        component: NotebookPageComponent,
-        canActivate: [permissionGuard],
-        data: { screenKey: 'notebook' }
-      },
-      {
-        path: 'diff',
-        component: DiffPageComponent,
-        canActivate: [permissionGuard],
-        data: { screenKey: 'diff' }
-      },
-      {
-        path: 'ast',
-        component: AstPageComponent,
-        canActivate: [permissionGuard],
-        data: { screenKey: 'ast' }
       },
       {
         path: 'profile',

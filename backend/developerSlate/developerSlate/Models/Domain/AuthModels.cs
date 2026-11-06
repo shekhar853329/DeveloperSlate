@@ -49,9 +49,6 @@ public static class AppScreens
         ("blogs", "Engineering Articles & RFCs", "Platform Feeds", "Read technical whitepapers, RFC proposals, and kernel architecture posts"),
         ("blogs-write", "Author Articles & RFCs", "Platform Feeds", "Draft and publish peer-reviewed RFC whitepapers and articles"),
         ("tags", "Technology Directory & Tags", "Platform Feeds", "Explore tag taxonomies, growth metrics, and technologies"),
-        ("notebook", "Code Notebook Vault", "Workbench & Tools", "Save and manage reusable code snippets and architectural recipes"),
-        ("diff", "Code Diff Viewer", "Workbench & Tools", "Inspect git patch diffs, hunks, and multi-file changes"),
-        ("ast", "AST Visualizer", "Workbench & Tools", "Explore AST syntax node trees and parser diagnostics"),
         ("chat", "Live Terminal Channels & DMs", "Real-time & Identity", "Real-time developer chat, SignalR code exchanges, and threads"),
         ("profile", "Developer Profile & Reputation", "Real-time & Identity", "Developer telemetry, verified proficiencies, and endorsements"),
         ("roles-management", "Roles & Screen Permissions", "Administration", "Configure security roles and assign read/write privileges per screen"),
@@ -62,10 +59,10 @@ public static class AppScreens
         { "roles-management", "users-management" };
 
     private static readonly HashSet<string> ViewerReadScreens = new(StringComparer.OrdinalIgnoreCase)
-        { "questions", "blogs", "tags", "diff", "ast", "profile" };
+        { "questions", "blogs", "tags", "profile" };
 
     private static readonly HashSet<string> DeveloperWriteScreens = new(StringComparer.OrdinalIgnoreCase)
-        { "questions", "studio", "notebook", "chat", "profile" };
+        { "questions", "studio", "chat", "profile" };
 
     /// <summary>
     /// Builds a permission map for <paramref name="userRoles"/> across all known screens.

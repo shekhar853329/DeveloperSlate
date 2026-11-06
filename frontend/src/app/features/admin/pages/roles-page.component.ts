@@ -532,9 +532,9 @@ export class RolesPageComponent implements OnInit {
         canWrite = !['roles-management', 'users-management'].includes(s.key);
       } else if (this.newRoleTemplate === 'developer') {
         canRead = !['roles-management', 'users-management'].includes(s.key);
-        canWrite = ['questions', 'studio', 'notebook', 'chat', 'profile'].includes(s.key);
+        canWrite = ['questions', 'studio', 'chat', 'profile'].includes(s.key);
       } else if (this.newRoleTemplate === 'viewer') {
-        canRead = ['questions', 'blogs', 'tags', 'diff', 'ast', 'profile'].includes(s.key);
+        canRead = ['questions', 'blogs', 'tags', 'profile'].includes(s.key);
         canWrite = false;
       }
 

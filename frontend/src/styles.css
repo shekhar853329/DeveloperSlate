@@ -102,3 +102,120 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+/* ── Rendered article content (TinyMCE HTML output) ─────────────────── */
+.article-content > :first-child { margin-top: 0; }
+.article-content > :last-child { margin-bottom: 0; }
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+  font-family: 'Geist', 'Inter', sans-serif;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin: 1.6em 0 0.6em;
+}
+.article-content h1 { font-size: 1.875rem; }
+.article-content h2 { font-size: 1.5rem; }
+.article-content h3 { font-size: 1.25rem; }
+.article-content h4 { font-size: 1.05rem; }
+.article-content p { margin: 0.9em 0; }
+.article-content a { color: var(--primary-color); text-decoration: underline; }
+.article-content a:hover { color: var(--primary-hover); }
+.article-content ul,
+.article-content ol { margin: 0.9em 0; padding-left: 1.5em; }
+.article-content ul { list-style: disc; }
+.article-content ol { list-style: decimal; }
+.article-content li { margin: 0.35em 0; }
+.article-content blockquote {
+  margin: 1em 0;
+  padding: 0.25em 0 0.25em 1em;
+  border-left: 3px solid var(--border-active);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.article-content pre {
+  background: var(--code-bg);
+  padding: 1em;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+.article-content code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+}
+.article-content :not(pre) > code {
+  background: var(--code-bg);
+  padding: 0.15em 0.4em;
+  border-radius: 0.3rem;
+}
+.article-content pre code { background: transparent; padding: 0; }
+.article-content img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1em 0; }
+.article-content table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+.article-content th,
+.article-content td { border: 1px solid var(--border-color); padding: 0.5em 0.75em; text-align: left; }
+.article-content th { background: var(--bg-elevated); font-weight: 700; }
+.article-content hr { border: 0; border-top: 1px solid var(--border-color); margin: 1.5em 0; }
+
+/* ── TinyMCE editor host: fill the studio editor pane ────────────────── */
+.editor-host { display: flex; flex-direction: column; min-height: 0; }
+.editor-host editor { display: block; flex: 1 1 auto; min-height: 0; }
+.editor-host .tox-tinymce { height: 100% !important; border: none; border-radius: 0; }
+
+/* ── Compact TinyMCE chrome: smaller icons/buttons → more fit per row ── */
+.tox .tox-toolbar,
+.tox .tox-toolbar__primary,
+.tox .tox-toolbar__overflow,
+.tox .tox-toolbar-overlord { padding: 0 !important; }
+.tox .tox-toolbar__group { padding: 0 1px !important; }
+.tox .tox-tbtn {
+  height: 28px !important;
+  padding: 0 3px !important;
+  margin: 1px 0 !important;
+  /* reset font-weight so it doesn't thicken SVG paths that use currentColor */
+  font-weight: 400 !important;
+}
+/* ── TinyMCE icon scaling ───────────────────────────────────────────────
+   TinyMCE icons are authored on a 24x24 coordinate canvas without a
+   viewBox attribute. Overriding width/height in CSS clips the SVG viewport
+   and cuts off the icon graphics. Using CSS transform: scale() uniformly
+   scales down the rendered vector graphic around its center, giving
+   compact icons without any cropping or loss of graphic detail. */
+.tox .tox-tbtn svg,
+.tox .tox-tbtn .tox-icon svg {
+  transform: scale(0.75);
+  transform-origin: center;
+  fill: #222f3e !important;
+  font-weight: 400 !important;
+  /* ensure no Material Symbols / icon-font variation settings leak in */
+  font-variation-settings: normal !important;
+}
+
+/* Keep dropdown chevrons at a readable scale */
+.tox .tox-tbtn__select-chevron svg,
+.tox .tox-split-button__chevron svg {
+  transform: scale(0.85);
+  transform-origin: center;
+}
+/* active / hover states: let TinyMCE handle colour via its own classes */
+.tox .tox-tbtn:hover svg,
+.tox .tox-tbtn:hover .tox-icon svg,
+.tox .tox-tbtn--enabled svg,
+.tox .tox-tbtn--enabled .tox-icon svg { fill: #006ce7 !important; }
+
+.tox .tox-tbtn--select { padding: 0 5px !important; }
+.tox .tox-tbtn__select-label { font-size: 12px !important; font-weight: 400 !important; }
+.tox .tox-tbtn .tox-tbtn__icon-wrap { display: inline-flex; align-items: center; }
+.tox .tox-menubar .tox-mbtn {
+  font-size: 12px !important;
+  padding: 0 6px !important;
+  height: 28px !important;
+  font-weight: 400 !important;
+}
+.tox .tox-statusbar { font-size: 11px !important; padding: 0 6px !important; }
+.tox .tox-statusbar__path,
+.tox .tox-statusbar__wordcount { font-size: 11px !important; }

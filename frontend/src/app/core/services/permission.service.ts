@@ -64,7 +64,7 @@ export class PermissionService {
       return true;
     }
     if (roles.includes('Viewer')) {
-      if (['questions', 'blogs', 'tags', 'diff', 'ast', 'profile'].includes(screenKey)) {
+      if (['questions', 'blogs', 'tags', 'profile'].includes(screenKey)) {
         return true;
       }
       return false;
@@ -94,8 +94,8 @@ export class PermissionService {
       return true;
     }
     if (roles.includes('Developer')) {
-      // Developers can write on problem questions, studio, notebook, chat, profile
-      return ['questions', 'studio', 'notebook', 'chat', 'profile'].includes(screenKey);
+      // Developers can write on problem questions, studio, chat, profile
+      return ['questions', 'studio', 'chat', 'profile'].includes(screenKey);
     }
     if (roles.includes('Viewer')) {
       return false; // Viewers have zero write access
