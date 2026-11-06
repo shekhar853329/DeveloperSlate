@@ -38,16 +38,14 @@ export const routes: Routes = [
         data: { screenKey: 'questions' }
       },
       {
+        // Public: published articles must be viewable without authentication.
+        // Only authoring (studio) and admin screens require the permission guard.
         path: 'blogs',
-        component: BlogsPageComponent,
-        canActivate: [permissionGuard],
-        data: { screenKey: 'blogs' }
+        component: BlogsPageComponent
       },
       {
         path: 'blogs/:slug',
-        component: BlogDetailPageComponent,
-        canActivate: [permissionGuard],
-        data: { screenKey: 'blogs' }
+        component: BlogDetailPageComponent
       },
       {
         path: 'studio',
